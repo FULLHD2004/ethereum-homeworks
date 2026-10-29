@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stochastic Penetration Scores</title>
+    <style>
+        :root {
+            --bg: #0a1020;
+            --panel: #121d32;
+            --panel2: #17243b;
+            --line: #2c3a51;
+            --text: #eaf2ff;
+            --muted: #a8b8cf;
+            --blue: #75b7ff;
+            --mint: #60e0bd;
+            --pink: #ff9db8;
+            --yellow: #ffc978;
+            --max: 1190px
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(ellipse at top right, #182c50 0%, var(--bg) 45%);
+            font: 15px/1.7 system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+            color: var(--text)
+        }
+
+        .wrap {
+            max-width: var(--max);
+            margin: auto;
+            padding: 24px
+        }
+
+        header {
+            padding: 46px 0 28px
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .17em;
+            text-transform: uppercase;
+            color: var(--mint)
+        }
+
+        h1 {
+            font-size: clamp(31px, 4.2vw, 53px);
+            letter-spacing: -.045em;
+            line-height: 1.1;
+            margin: 12px 0 20px;
+            max-width: 850px
+        }
+
+        h2 {
+            font-size: 24px;
+            letter-spacing: -.025em;
+            margin: 0 0 12px
+        }
+
+        h3 {
+            font-size: 18px;
+            margin: 0 0 10px
+        }
+
+        p {
+            color: var(--muted);
+            margin: 9px 0 15px
+        }
+
+        strong {
+            color: var(--text)
+        }
+
+        .lead {
+            font-size: 17px;
+            max-width: 850px
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 5px 11px;
+            border: 1px solid #42678a;
+            border-radius: 40px;
+            color: #b6d7ff;
+            font-size: 12px;
+            margin-right: 6px
+        }
+
+        .panel {
+            background: linear-gradient(145deg, var(--panel), #10192c);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 23px;
+            margin: 18px 0;
+            box-shadow: 0 13px 35px #0002
+        }
+
+        .section-intro {
+            max-width: 1000px
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 15px;
+            align-items: end
+        }
+
+        .control label {
+            display: block;
+            color: #bfd0e6;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 7px
+        }
+
+        select,
+        input {
+            width: 100%;
+            background: #0a1427;
+            color: var(--text);
+            border: 1px solid #40506b;
+            border-radius: 9px;
+            padding: 11px;
+            font: inherit;
+            min-height: 45px
+        }
+
+        input:focus,
+        select:focus,
+        button:focus-visible {
+            outline: 2px solid var(--mint);
+            outline-offset: 2px
+        }
+
+        button {
+            cursor: pointer;
+            border: 0;
+            background: linear-gradient(110deg, #76b8ff, #69e0c0);
+            font-weight: 800;
+            color: #081525;
+            padding: 12px 18px;
+            border-radius: 10px;
+            min-height: 45px
+        }
+
+        button:hover {
+            filter: brightness(1.08)
+        }
+
+        button.secondary {
+            background: #223550;
+            color: #e6f0ff;
+            border: 1px solid #45607e
+        }
+
+        .buttonrow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+            align-items: center
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #91a6c4
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 13px
+        }
+
+        .stat {
+            background: #0b172b;
+            border: 1px solid #31415a;
+            padding: 15px;
+            border-radius: 12px
+        }
+
+        .stat .label {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .stat .value {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -.03em;
+            color: var(--text);
+            overflow-wrap: anywhere
+        }
+
+        .stat .sub {
+            font-size: 11px;
+            color: #94b4d0
+        }
+
+        .chartbox {
+            position: relative;
+            width: 100%;
+            height: 300px
+        }
+
+        .chartbox canvas {
+            width: 100%;
+            height: 100%;
+            display: block
+        }
+
+        .charthead {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .charthead select {
+            width: auto;
+            min-width: 170px;
+            min-height: 35px;
+            padding: 5px 8px;
+            font-size: 13px
+        }
+
+        .legend {
+            font-size: 12px;
+            color: #a9bfdc;
+            margin-top: 9px
+        }
+
+        .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px
+        }
+
+        .formula {
+            background: #0a1528;
+            border: 1px solid #34465f;
+            padding: 14px 17px;
+            border-radius: 11px;
+            overflow-x: auto;
+            color: #d4e8ff;
+            font-size: 15px;
+            font-family: Georgia, 'Times New Roman', serif
+        }
+
+        .narrative {
+            border-left: 3px solid #60e0bd;
+            padding: 2px 0 2px 16px;
+            margin: 16px 0
+        }
+
+        .narrative p:last-child {
+            margin-bottom: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 13px
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #2a3950;
+            text-align: right;
+            padding: 11px 9px
+        }
+
+        th:first-child,
+        td:first-child {
+            text-align: left
+        }
+
+        th {
+            color: #c3d9f5
+        }
+
+        td {
+            color: #abc0dc
+        }
+
+        .table-scroll {
+            overflow-x: auto
+        }
+
+        code {
+            color: #b4e7da
+        }
+
+        footer {
+            padding: 20px 0 55px;
+            color: #9bafc9;
+            font-size: 13px
+        }
+
+        a {
+            color: #97cbff
+        }
+
+        .warning {
+            color: #ffca85
+        }
+
+        .status {
+            color: #9bdacb;
+            font-size: 12px
+        }
+
+        ul {
+            color: var(--muted);
+            padding-left: 22px
+        }
+
+        li {
+            margin-bottom: 9px
+        }
+
+        @media(max-width:980px) {
+            .controls {
+                grid-template-columns: repeat(3, 1fr)
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        @media(max-width:730px) {
+            .wrap {
+                padding: 15px
+            }
+
+            .controls,
+            .grid {
+                grid-template-columns: 1fr
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .panel {
+                padding: 17px
+            }
+
+            .chartbox {
+                height: 265px
+            }
+
+            header {
+                padding-top: 25px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <header>
+            <div class="eyebrow">Probability & stochastic processes</div>
+            <h1>How penetration scores behave as systems scale</h1>
+            <p class="lead">Explore how <strong>n systems</strong> and <strong>m attackers</strong> shape random
+                penetration scores. This experiment compares Bernoulli and Rademacher increments, traces individual
+                outcomes, and checks the Law of Large Numbers and Central Limit Theorem against simulated data.</p>
+        </header>
+        <section class="panel">
+            <h2>1. Problem setup and interpretation</h2>
+            <p>Imagine that each of <strong>m independent attackers</strong> attempts to penetrate a collection of
+                <strong>n systems</strong> in sequence. For attacker <em>j</em> and system <em>i</em>, let
+                X<sub>j,i</sub> be the random score obtained at that step. A trajectory is the cumulative sum of that
+                attacker’s scores over the first k systems: S<sub>j,k</sub> = X<sub>j,1</sub> + ... + X<sub>j,k</sub>.
+                Each attacker follows the same probability model and all increments are independent across both
+                attackers and steps.
+            </p>
+            <p>Under the <strong>Bernoulli model</strong>, a successful penetration scores 1 and an unsuccessful one
+                scores 0, with success probability p. Under the <strong>Rademacher model</strong>, each step contributes
+                +1 or −1 with probability 1/2 each: it is a symmetric <em>net-score model</em>, not a literal count of
+                successful penetrations. The negative scores represent setbacks, defensive wins, or losses of score. The
+                attacker population m gives us repeated sample paths; it does not change the
+                distribution of a single attacker’s score.</p>
+        </section>
+        <section class="panel" id="controls">
+            <h2>2. Configure the Monte Carlo experiment</h2>
+            <p>Choose the scoring model, system count, and number of attackers. The simulation generates one independent
+                sequence of n increments per attacker, then calculates the three statistics from each sequence. </p>
+                <div class="formula">S<sub>n</sub> = ∑<sub>i=1</sub><sup>n</sup> X<sub>i</sub> &nbsp;&nbsp; | &nbsp;&nbsp;
+                A<sub>n</sub> = S<sub>n</sub>/n &nbsp;&nbsp; | &nbsp;&nbsp; Z<sub>n</sub> = S<sub>n</sub>/√n</div> <p>Changing
+                n changes the length of each attack path; changing m changes how many
+                independent paths are observed and therefore how precisely the empirical distributions approximate the
+                theoretical ones. The same experiment also evaluates intermediate system counts.
+            </p>
+            <div class="controls">
+                <div class="control"><label for="model">Increment model</label><select id="model">
+                        <option value="rademacher">Rademacher (±1)</option>
+                        <option value="bernoulli">Bernoulli (0 / 1)</option>
+                    </select></div>
+                <div class="control"><label for="n">Systems (n)</label><select id="n">
+                        <option>20</option>
+                        <option>50</option>
+                        <option selected>100</option>
+                        <option>200</option>
+                        <option>500</option>
+                        <option>1000</option>
+                        <option>2000</option>
+                    </select></div>
+                <div class="control"><label for="m">Attackers (m)</label><select id="m">
+                        <option>100</option>
+                        <option>500</option>
+                        <option selected>1000</option>
+                        <option>3000</option>
+                        <option>5000</option>
+                    </select></div>
+                <div class="control"><label for="p">Bernoulli p</label><input type="number" id="p" value="0.60" min="0"
+                        max="1" step="0.05"></div>
+                <div class="control"><label for="eps">LLN tolerance (ε)</label><input type="number" id="eps"
+                        value="0.10" min="0.01" max="1" step="0.01"></div>
+            </div>
+            <div class="buttonrow"><button id="run">Run new simulation</button><button class="secondary"
+                    id="compare">Use larger n (next step)</button><span class="status" id="status"
+                    role="status">Ready.</span></div>
+            <p class="hint">Each run draws new random values; results fluctuate slightly. Computation is local in your
+                browser, with no external libraries or network requests. The charts show up to 18 attack trajectories to
+                avoid clutter; all m attackers contribute to the distribution and summary statistics.</p>
+        </section>
+        <section class="panel">
+            <h2>3. Sample trajectories: individual attackers</h2>
+            <p>Each colored line represents the cumulative progress of one independently simulated attacker as systems
+                are encountered one by one. For Bernoulli scores, the total can only stay constant or increase; its
+                typical slope is approximately p. For Rademacher scores, it can rise or fall because gains and losses
+                are equally likely, so paths fluctuate around zero rather than following a persistent upward trend.
+                Individual paths remain unpredictable even when aggregate statistical laws hold.</p>
+            <div class="charthead">
+                <h3 id="trajtitle">Cumulative score versus systems tested</h3><select id="trajMetric"
+                    aria-label="Trajectory display">
+                    <option value="total">Total Sₖ</option>
+                    <option value="average">Average Sₖ/k</option>
+                    <option value="normalized">Normalized Sₖ/√k</option>
+                </select>
+            </div>
+            <div class="chartbox"><canvas id="trajectories" aria-label="Line chart of attackers' scores"></canvas></div>
+            <p id="trajExplanation" class="legend"></p>
+        </section>
+        <section class="panel">
+            <h2>4. Three terminal-score distributions</h2>
+            <p>At step n, each attacker contributes one terminal observation to each of the three statistics. The
+                histograms below collect all m independent observations into frequency bins. They contain the
+                same underlying data, but rescaled differently; the normalization changes the numerical
+                scale of fluctuations rather than creating additional information. As n increases, the raw total spreads
+                across a larger absolute range, the average becomes concentrated near its expectation, and the
+                square-root-normalized total keeps fluctuations on an approximately constant scale.
+            </p>
+            <div class="grid">
+                <div>
+                    <h3>Total score, S<sub>n</sub></h3>
+                    <div class="chartbox"><canvas id="histTotal"></canvas></div>
+                    <p class="legend">The spread grows with √n; in the Bernoulli case the center grows with n.</p>
+                </div>
+                <div>
+                    <h3>Average score, S<sub>n</sub>/n</h3>
+                    <div class="chartbox"><canvas id="histAvg"></canvas></div>
+                    <p class="legend">The histogram contracts toward E[X] as n gets larger, demonstrating the LLN.</p>
+                </div>
+            </div>
+            <h3>Normalized score, S<sub>n</sub>/√n</h3>
+            <div class="chartbox"><canvas id="histNorm"></canvas></div>
+            <p class="legend" id="normExplanation"></p>
+            <div class="stats" style="margin-top:14px">
+                <div class="stat">
+                    <div class="label">Theoretical E[Sₙ]</div>
+                    <div class="value" id="meanS">—</div>
+                    <div class="sub">n × E[X]</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Empirical E[Sₙ/n]</div>
+                    <div class="value" id="avgA">—</div>
+                    <div class="sub" id="target">Expected limit: —</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Empirical Var(Sₙ/√n)</div>
+                    <div class="value" id="varianceZ">—</div>
+                    <div class="sub" id="theoryVar">Theoretical: —</div>
+                </div>
+                <div class="stat">
+                    <div class="label">P(|Sₙ/n − μ| &gt; ε)</div>
+                    <div class="value" id="tail">—</div>
+                    <div class="sub">Simulated proportion</div>
+                </div>
+            </div>
+        </section>
+        <section class="panel">
+            <h2>5. Law of Large Numbers: why averages stabilize</h2>
+            <p>The <strong>Weak Law of Large Numbers</strong> states that for IID increments with finite mean μ, the
+                sample average S<sub>n</sub>/n converges in probability to μ. This means that, for any fixed ε &gt; 0,
+                the probability of the average differing from μ by more than ε approaches zero as n increases. Here μ =
+                p for Bernoulli and μ = 0 for Rademacher. The chart compares the simulated fraction of attackers whose
+                averages are outside the selected tolerance with a rigorous theoretical <em>upper bound</em> from
+                Chebyshev’s inequality (not an exact probability).</p>
+            <div class="formula">P(|S<sub>n</sub>/n − μ| &gt; ε) ≤ σ² / (n ε²) &nbsp; → &nbsp; 0</div>
+            <div class="chartbox"><canvas id="lln"></canvas></div>
+            <p class="legend"><span class="dot" style="background:var(--blue)"></span>Attackers far from the expected average
+                &nbsp; <span class="dot" style="background:var(--yellow)"></span>Theoretical maximum probability (Chebyshev)</p>
+            <div class="narrative">
+                <p id="llnReadout"></p>
+            </div>
+        </section>
+        <section class="panel">
+            <h2>6. Variance: the mathematical effect of normalization</h2>
+            <p>The purpose of this section is to investigate how the variability of attackers' penetration scores changes as the number of systems increases.
+Even when attackers follow the same probability model, they do not necessarily obtain the same score because their penetration attempts are random. Variance measures how much their scores tend to differ from the expected value.
+We compare the variance of three quantities: the total score, the average score, and the normalized total score.</p>
+            <div class="formula">Var(S<sub>n</sub>) = nσ² &nbsp; | &nbsp; Var(S<sub>n</sub>/n) = σ²/n &nbsp; | &nbsp;
+                Var(S<sub>n</sub>/√n) = σ²</div>
+            <p>The table shows the variance of these three quantities for increasing numbers of systems (n). For each quantity, we compare the theoretical variance, calculated using mathematical formulas, with the empirical variance, calculated from the simulated attackers.
+
+The results show three different behaviors:
+<ul>
+    <li>
+        <strong>Total score (Sₙ):</strong>
+        Its variance increases with n.
+        As attackers encounter more systems,
+        the differences between their scores become larger.
+    </li>
+
+    <li>
+        <strong>Average score (Sₙ/n):</strong>
+        Its variance decreases as n increases.
+        The average scores become more concentrated
+        around the expected value.
+    </li>
+
+    <li>
+        <strong>Normalized total score (Sₙ/√n):</strong>
+        Its variance remains constant as n increases.
+        This is important for the Central Limit Theorem.
+    </li>
+</ul></p>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>n</th>
+                            <th>Theoretical Var(Sₙ)</th>
+                            <th>Empirical Var(Sₙ)</th>
+                            <th>Theoretical Var(Sₙ/n)</th>
+                            <th>Empirical Var(Sₙ/n)</th>
+                            <th>Theoretical Var(Sₙ/√n)</th>
+                            <th>Empirical Var(Sₙ/√n)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="varianceRows"></tbody>
+                </table>
+            </div>
+        <p>This experiment demonstrates that the choice of normalization changes the variability of the penetration scores. Dividing by n makes the variance approach zero, while dividing by √n keeps it constant.
+This distinction is important because it explains why the average score converges to its expected value in the Law of Large Numbers, while the normalized score can retain a non-degenerate distribution, as studied in the Central Limit Theorem.</p>
+        </section>
+        <section class="panel">
+            <h2>7. Central Limit Theorem: when the bell curve appears</h2>
+            <p>The <strong>Central Limit Theorem</strong> describes the distribution of accumulated random fluctuations,
+                not the path of a particular attacker. For any IID model with finite, positive variance, the
+                <em>centered and standardized</em> total (S<sub>n</sub> − nμ)/(σ√n) converges in distribution to N(0,1).
+                In the Rademacher model μ = 0 and σ = 1, so the required standardization is exactly S<sub>n</sub>/√n:
+                its distribution approaches the standard normal bell curve. At finite n it is still discrete, so the
+                agreement is approximate.
+            </p>
+            <div class="formula">(S<sub>n</sub> − nμ) / (σ√n) ⇒ N(0,1) &nbsp; | &nbsp; Rademacher: S<sub>n</sub>/√n ⇒
+                N(0,1)</div>
+            <p>The purpose of this graph is to verify whether the distribution of the normalized penetration scores approaches a standard normal distribution as the number of systems increases.
+In the Rademacher model, each attacker receives either +1 or −1 for every penetration attempt, with equal probability. After attacking n systems, each attacker obtains a total score, which is divided by the square root of n.
+We repeat this experiment for m independent attackers and use their normalized scores to construct a histogram.</p>
+            <h3>Standardized distribution vs. standard normal density</h3>
+            <div class="chartbox"><canvas id="clt"></canvas></div>
+            <p class="legend"><span class="dot" style="background:var(--mint)"></span>Monte Carlo histogram (density)
+                &nbsp; <span class="dot" style="background:var(--pink)"></span>Standard normal density.</p>
+            <p id="cltReadout" class="narrative"></p>
+        </section>
+        <section class="panel">
+            <h2>8. Interpretation: systems, attackers, and security</h2>
+             <p>
+        The purpose of this section is to interpret the simulation
+        results in the context of cybersecurity, considering how
+        the number of systems (n) and the number of attackers (m)
+        influence the penetration scores.
+    </p>
+
+    <h3>The role of the number of systems (n)</h3>
+
+    <p>
+        Each attacker performs one penetration attempt for each
+        of the n systems.
+    </p>
+
+    <p>
+        As n increases, each attacker performs more attempts,
+        and the total score accumulates over a larger number
+        of systems.
+    </p>
+
+    <ul>
+        <li>
+            <strong>Bernoulli model:</strong>
+            The expected total number of successful penetrations
+            increases with n. However, the average success rate
+            becomes more stable and approaches the probability p,
+            as explained by the Law of Large Numbers.
+        </li>
+
+        <li>
+            <strong>Rademacher model:</strong>
+            Positive and negative scores tend to balance each
+            other, so the average score approaches zero as
+            the number of systems increases.
+        </li>
+    </ul>
+
+    <h3>The role of the number of attackers (m)</h3>
+
+    <p>
+        The number of attackers determines how many independent
+        penetration trajectories are generated.
+    </p>
+
+    <p>
+        Increasing m allows us to observe more possible outcomes
+        and construct more representative histograms of the
+        penetration scores.
+    </p>
+
+    <p>
+        Although individual attackers may obtain different
+        results, a larger number of simulated attackers makes
+        it easier to identify the statistical behavior predicted
+        by probability theory.
+    </p>
+
+    <h3>Interpreting the simulation results</h3>
+
+    <p>
+        The simulation shows that individual penetration outcomes
+        remain unpredictable, even when all attackers follow
+        the same probability model.
+    </p>
+
+    <p>
+        However, when the number of systems becomes large,
+        the average scores become more stable, and the
+        normalized scores exhibit predictable statistical patterns.
+    </p>
+
+    <h3>Conclusion</h3>
+
+    <p>
+        The experiment demonstrates how probability theory can
+        be used to analyze aggregate penetration scores across
+        multiple systems and attackers.
+    </p>
+
+    <p>
+        The model is a simplified representation of cybersecurity
+        attacks because it assumes independent attempts with
+        identical probabilities. Nevertheless, it helps explain
+        how system size and the number of simulated attackers
+        influence the observed statistical results.
+    </p>
+        </section>
+        <section class="panel">
+            <h2>9. How to reproduce and discuss the experiment</h2>
+            <p>
+        The purpose of this final section is to summarize
+        the main results obtained from the stochastic penetration
+        simulations and compare them with the theoretical
+        predictions.
+    </p>
+
+    <h3>Law of Large Numbers</h3>
+
+    <p>
+        The simulations illustrate that, as the number of systems
+        increases, the average penetration score becomes more
+        concentrated around its expected value.
+    </p>
+
+    <ul>
+        <li>
+            In the Bernoulli model, the average score approaches p.
+        </li>
+
+        <li>
+            In the Rademacher model, the average score
+            approaches zero.
+        </li>
+    </ul>
+
+    <p>
+        This behavior is consistent with the Law of Large Numbers,
+        which predicts convergence in probability of the
+        sample average.
+    </p>
+
+    <h3>Behavior of the Variance</h3>
+
+    <p>
+        The simulations also illustrate how different
+        normalizations affect the variability of penetration scores.
+    </p>
+
+    <ul>
+        <li>
+            <strong>Total score (Sₙ):</strong>
+            Its variance increases as n increases.
+        </li>
+
+        <li>
+            <strong>Average score (Sₙ/n):</strong>
+            Its variance decreases toward zero.
+        </li>
+
+        <li>
+            <strong>Normalized total score (Sₙ/√n):</strong>
+            Its variance remains constant as n increases.
+        </li>
+    </ul>
+
+    <p>
+        These results explain why the average becomes more
+        stable while the normalized total retains a nonzero
+        level of variability.
+    </p>
+
+    <h3>Central Limit Theorem</h3>
+
+    <p>
+        In the Rademacher model, the simulated distribution
+        of the normalized total score becomes increasingly
+        similar to the standard normal distribution as
+        n increases.
+    </p>
+
+    <p>
+        This behavior is consistent with the Central Limit
+        Theorem, showing how the sum of many independent
+        random increments can produce an approximately
+        normal distribution after appropriate normalization.
+    </p>
+
+    <h3>Final Conclusion</h3>
+
+    <p>
+        The experiments show that, although individual
+        penetration attempts are random, their aggregate
+        behavior follows predictable mathematical laws.
+    </p>
+
+    <p>
+        Increasing the number of systems makes the average
+        penetration score more stable, while increasing
+        the number of simulated attackers improves the
+        empirical representation of the score distributions.
+    </p>
+
+    <p>
+        Overall, the simulations provide numerical illustrations
+        of the Law of Large Numbers, the behavior of variance
+        under different normalizations, and the Central
+        Limit Theorem.
+    </p>
+        </section>
+        
+    </div>
+    <script>
+        'use strict';
+        const $ = id => document.getElementById(id), fmt = (v, d = 3) => Number.isFinite(v) ? v.toFixed(d) : '—';
+        const palette = ['#75b7ff', '#60e0bd', '#ff9db8', '#ffc978', '#b1a1ff', '#fbac79', '#8cd7e9', '#e1a6d6', '#cbe084'];
+        let experiment = null;
+        function mean(a) {return a.reduce((s, x) => s + x, 0) / a.length}
+        function variance(a) {let mu = mean(a); return a.reduce((s, x) => s + (x - mu) ** 2, 0) / a.length}
+        function pointsFor(n) {return [...new Set([10, 20, 50, 100, 200, 500, 1000, 2000, n].filter(x => x <= n))].sort((a, b) => a - b)}
+        function normal(x) {return Math.exp(-x * x / 2) / Math.sqrt(2 * Math.PI)}
+        function simulate() {const model = $('model').value, n = +$('n').value, m = +$('m').value, p = Math.max(0, Math.min(1, Number($('p').value))), eps = Math.max(.01, Number($('eps').value) || .1); $('p').value = p; $('eps').value = eps; const mu = model === 'rademacher' ? 0 : p, sigma2 = model === 'rademacher' ? 1 : p * (1 - p); const checkpoints = pointsFor(n); const sums = Object.fromEntries(checkpoints.map(k => [k, []])); let samplePaths = []; let track = new Set(checkpoints); for (let j = 0; j < m; j++) {let s = 0, path = j < 18 ? [0] : null; for (let i = 1; i <= n; i++) {s += (model === 'rademacher' ? (Math.random() < .5 ? 1 : -1) : (Math.random() < p ? 1 : 0)); if (path) path.push(s); if (track.has(i)) sums[i].push(s)} if (path) samplePaths.push(path)} experiment = {model, n, m, p, eps, mu, sigma2, checkpoints, sums, samplePaths}; $('status').textContent = `Simulated ${m.toLocaleString()} attackers × ${n.toLocaleString()} systems.`; render()}
+        function canvasSetup(id) {const c = $(id), r = c.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2); c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr); const ctx = c.getContext('2d'); ctx.scale(dpr, dpr); return {ctx, w: r.width, h: r.height}}
+        function axes(ctx, w, h, ymin, ymax, xmin, xmax, xLabel = '', yFormat = x => fmt(x, 1)) {const L = 52, R = 16, T = 16, B = 40, pw = w - L - R, ph = h - T - B; ctx.clearRect(0, 0, w, h); ctx.lineWidth = 1; ctx.font = '11px system-ui'; ctx.textBaseline = 'middle'; for (let j = 0; j <= 4; j++) {const v = ymin + (ymax - ymin) * j / 4, y = T + ph - (j / 4) * ph; ctx.strokeStyle = '#30425c'; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(w - R, y); ctx.stroke(); ctx.fillStyle = '#a5b8d0'; ctx.textAlign = 'right'; ctx.fillText(yFormat(v), L - 7, y)} ctx.fillStyle = '#a5b8d0'; ctx.textAlign = 'center'; for (let j = 0; j <= 4; j++) {const x = L + j * pw / 4; const v = xmin + (xmax - xmin) * j / 4; ctx.fillText(Math.abs(v) >= 100 ? Math.round(v).toString() : fmt(v, Math.abs(v) >= 10 ? 1 : 2), x, h - B + 16)} ctx.font = '11px system-ui'; ctx.fillText(xLabel, L + pw / 2, h - 6); return {x: v => L + (v - xmin) / (xmax - xmin || 1) * pw, y: v => T + ph - (v - ymin) / (ymax - ymin || 1) * ph, L, R, T, B, pw, ph}}
+        function line(ctx, a, data, color, width = 2) {if (!data.length) return; ctx.beginPath(); data.forEach(([x, y], i) => {const xx = a.x(x), yy = a.y(y); if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy)}); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke()}
+        function renderTrajectories() {const e = experiment, metric = $('trajMetric').value, {ctx, w, h} = canvasSetup('trajectories'); let all = [], mapped = []; for (const path of e.samplePaths) {let pts = []; const step = Math.max(1, Math.floor(e.n / 300)); for (let k = 1; k <= e.n; k += step) {const v = metric === 'average' ? path[k] / k : metric === 'normalized' ? path[k] / Math.sqrt(k) : path[k]; pts.push([k, v]); all.push(v)} if (pts[pts.length - 1][0] !== e.n) {let k = e.n, v = metric === 'average' ? path[k] / k : metric === 'normalized' ? path[k] / Math.sqrt(k) : path[k]; pts.push([k, v]); all.push(v)} mapped.push(pts)} let ymin = Math.min(...all, e.mu * (metric === 'total' ? e.n : metric === 'average' ? 1 : Math.sqrt(e.n))), ymax = Math.max(...all, e.mu * (metric === 'total' ? e.n : metric === 'average' ? 1 : Math.sqrt(e.n))); let pad = Math.max((ymax - ymin) * .13, .1); let a = axes(ctx, w, h, ymin - pad, ymax + pad, 1, e.n, 'Systems examined (k)'); mapped.forEach((pts, i) => line(ctx, a, pts, palette[i % palette.length], 1.25)); const expectation = Array.from({length: 50}, (_, i) => {const k = 1 + (e.n - 1) * i / 49; return [k, e.mu * (metric === 'total' ? k : metric === 'average' ? 1 : Math.sqrt(k))]}); ctx.setLineDash([7, 5]); line(ctx, a, expectation, '#ffffff', 2.5); ctx.setLineDash([]); $('trajtitle').textContent = {total: 'Cumulative total score Sₖ', average: 'Running average Sₖ/k', normalized: 'Square-root-normalized score Sₖ/√k'}[metric]; $('trajExplanation').textContent = 'Colored lines: 18 example attackers (or fewer if applicable). White dashed line: theoretical expected value of the displayed quantity.'}
+        function makeHistogram(vals, min, max, bins = 32) {if (!(max > min)) {min -= 1; max += 1} let width = (max - min) / bins, cnt = Array(bins).fill(0); for (const v of vals) {const idx = Math.min(bins - 1, Math.max(0, Math.floor((v - min) / width))); cnt[idx]++} return {min, max, width, cnt, dens: cnt.map(c => c / vals.length / width), bins}}
+        function drawHistogram(id, vals, {overlay = false, standard = false} = {}) {const {ctx, w, h} = canvasSetup(id); let low = Math.min(...vals), high = Math.max(...vals); let pad = Math.max((high - low) * .13, .25); low -= pad; high += pad; if (standard) {low = Math.min(low, -3.5); high = Math.max(high, 3.5)} if (high - low < 1e-6) {low -= .5; high += .5} let hist = makeHistogram(vals, low, high, Math.min(42, Math.max(20, Math.round(Math.sqrt(vals.length) / 2)))); let peak = Math.max(...hist.dens, overlay ? .43 : 0) * 1.18 || 1; let a = axes(ctx, w, h, 0, peak, low, high, 'Score', v => fmt(v, 2)); for (let i = 0; i < hist.bins; i++) {const x = a.x(hist.min + i * hist.width), width = a.x(hist.min + (i + 1) * hist.width) - x; ctx.fillStyle = '#60e0bd99'; ctx.fillRect(x, a.y(hist.dens[i]), Math.max(1, width - 1), a.y(0) - a.y(hist.dens[i]))} if (overlay) {const curve = Array.from({length: 240}, (_, i) => {let x = low + (high - low) * i / 239; return [x, normal(x)]}); line(ctx, a, curve, '#ff9db8', 2.5)} }
+        function drawLLN() {const e = experiment, {ctx, w, h} = canvasSetup('lln'); let dat = e.checkpoints.map(k => {const v = e.sums[k].filter(s => Math.abs(s / k - e.mu) > e.eps).length / e.m; return [k, v, Math.min(1, e.sigma2 / (k * e.eps * e.eps))]}); let a = axes(ctx, w, h, 0, 1, Math.min(...e.checkpoints), e.n, 'Number of systems (n)', v => fmt(v, 2)); line(ctx, a, dat.map(x => [x[0], x[1]]), '#75b7ff', 2.6); line(ctx, a, dat.map(x => [x[0], x[2]]), '#ffc978', 2.2); for (const [k, v] of dat) {ctx.beginPath(); ctx.arc(a.x(k), a.y(v), 3, 0, Math.PI * 2); ctx.fillStyle = '#75b7ff'; ctx.fill()} let last = dat.at(-1); $('llnReadout').innerHTML = `Interpretation of the Law of Large Numbers
+The blue curve shows the proportion of attackers whose average penetration score differs significantly from the expected value. As the number of systems increases, this proportion decreases, meaning that most attackers obtain an average score close to the theoretical mean.
+The orange curve represents Chebyshev's theoretical upper bound. It also decreases as the number of systems grows, supporting the convergence in probability predicted by the Law of Large Numbers.
+Conclusion: Increasing the number of systems makes large deviations of the average penetration score less likely, even though individual attacks remain random.`}
+        function renderTable() {const e = experiment; $('varianceRows').innerHTML = e.checkpoints.map(k => {let totals = e.sums[k], v = variance(totals); return `<tr><td><strong>${k}</strong></td><td>${fmt(k * e.sigma2)}</td><td>${fmt(v)}</td><td>${fmt(e.sigma2 / k, 5)}</td><td>${fmt(v / (k * k), 5)}</td><td>${fmt(e.sigma2)}</td><td>${fmt(v / k)}</td></tr>`}).join('')}
+        function render() {const e = experiment; if (!e) return; let totals = e.sums[e.n], avgs = totals.map(s => s / e.n), norms = totals.map(s => s / Math.sqrt(e.n)); renderTrajectories(); drawHistogram('histTotal', totals); drawHistogram('histAvg', avgs); drawHistogram('histNorm', norms); $('meanS').textContent = fmt(e.n * e.mu, 2); $('avgA').textContent = fmt(mean(avgs), 4); $('target').textContent = 'Expected limit: ' + fmt(e.mu, 3); $('varianceZ').textContent = fmt(variance(norms), 3); $('theoryVar').textContent = 'Theoretical: ' + fmt(e.sigma2, 3); $('tail').textContent = fmt(100 * avgs.filter(v => Math.abs(v - e.mu) > e.eps).length / e.m, 1) + '%'; $('normExplanation').textContent = e.model === 'rademacher' ? 'In this symmetric model the histogram is centered near 0 and approaches N(0,1) as n grows.' : 'In this Bernoulli model the center is p√n, which grows with n for p > 0. This uncentered statistic does not converge to N(0,1).'; drawLLN(); renderTable(); if (e.sigma2 > 0) {let standardized = totals.map(s => (s - e.n * e.mu) / Math.sqrt(e.n * e.sigma2)); drawHistogram('clt', standardized, {overlay: true, standard: true}); $('cltReadout').textContent = `At n = ${e.n}, the empirical mean of the standardized scores is ${fmt(mean(standardized))}, and their empirical variance is ${fmt(variance(standardized))}. The theoretical limit is N(0,1). The simulation illustrates that, even though individual penetration attempts have only two possible outcomes (+1 or −1), the distribution of their normalized sum approaches a continuous, bell-shaped normal distribution when the number of systems becomes large.
+This is the main result of the Central Limit Theorem in the Rademacher model.`} else {drawHistogram('clt', Array(e.m).fill(0)); $('cltReadout').textContent = 'Here p is 0 or 1, so the Bernoulli increment has zero variance: all scores are deterministic, and the standardized CLT statistic is undefined. Choose 0 < p < 1 to see the normal approximation.'}}
+        $('run').addEventListener('click', simulate); $('compare').addEventListener('click', () => {let s = $('n'); if (s.selectedIndex < s.options.length - 1) s.selectedIndex++; simulate()}); $('trajMetric').addEventListener('change', renderTrajectories); $('model').addEventListener('change', () => {$('p').disabled = $('model').value === 'rademacher'; simulate()}); let resizeTimer; window.addEventListener('resize', () => {clearTimeout(resizeTimer); resizeTimer = setTimeout(() => {if (experiment) render()}, 160)}); $('p').disabled = true; simulate();
+    </script>
+</body>
+
+</html>
