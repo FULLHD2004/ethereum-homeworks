@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+    content="Completed homework: Welford's recurrence formulas and sampling mean and variance, with an interactive simulation." />
+  <title>Welford's Algorithm | Completed Statistics Homework</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fc;
+      --ink: #15223a;
+      --muted: #5d6b83;
+      --line: #dfe5ef;
+      --blue: #2759d8;
+      --teal: #087f74;
+      --card: #fff;
+      --soft: #edf3ff;
+      --radius: 18px
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.65 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif
+    }
+
+    .wrap {
+      max-width: 1050px;
+      margin: auto;
+      padding: 0 24px
+    }
+
+    .hero {
+      background: linear-gradient(120deg, #101b36, #1d3d82);
+      color: white;
+      padding: 56px 0 48px
+    }
+
+    .eyebrow {
+      font-size: .78rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #a6d9ff
+    }
+
+    .hero h1 {
+      font-size: clamp(2.1rem, 5vw, 3.35rem);
+      line-height: 1.12;
+      max-width: 800px;
+      margin: 12px 0
+    }
+
+    .hero p {
+      color: #d9e5ff;
+      max-width: 730px;
+      margin: 14px 0 0
+    }
+
+    .topnav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 26px
+    }
+
+    .topnav a {
+      color: white;
+      text-decoration: none;
+      border: 1px solid #ffffff55;
+      border-radius: 30px;
+      padding: 7px 15px;
+      font-size: .9rem
+    }
+
+    .topnav a:hover {
+      background: #ffffff22
+    }
+
+    main {
+      padding: 34px 0 60px
+    }
+
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: clamp(22px, 4vw, 37px);
+      margin: 22px 0;
+      box-shadow: 0 8px 32px #1a32680a
+    }
+
+    h2 {
+      font-size: 1.65rem;
+      line-height: 1.25;
+      margin: 0 0 14px
+    }
+
+    h3 {
+      margin: 25px 0 7px;
+      font-size: 1.14rem
+    }
+
+    p {
+      margin: 10px 0 16px
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .tag {
+      display: inline-block;
+      color: #1343a8;
+      background: #eaf0ff;
+      border-radius: 30px;
+      font-size: .75rem;
+      font-weight: 800;
+      padding: 4px 11px;
+      margin-bottom: 12px
+    }
+
+    .math {
+      overflow-x: auto;
+      background: #f4f7ff;
+      border-left: 4px solid var(--blue);
+      padding: 14px 17px;
+      margin: 15px 0;
+      border-radius: 0 10px 10px 0;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.16rem;
+      white-space: nowrap
+    }
+
+    .math small {
+      font-family: system-ui, sans-serif;
+      font-size: .82rem;
+      color: #596b8b
+    }
+
+    .callout {
+      padding: 16px 20px;
+      background: #ebf8f5;
+      border: 1px solid #b8e2d8;
+      border-radius: 12px;
+      margin: 18px 0
+    }
+
+    .callout strong {
+      color: #076b61
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px
+    }
+
+    .mini {
+      padding: 18px;
+      background: #f7f9fd;
+      border: 1px solid var(--line);
+      border-radius: 14px
+    }
+
+    .mini strong {
+      display: block;
+      font-size: 1.15rem
+    }
+
+    .mini span {
+      color: var(--muted);
+      font-size: .88rem
+    }
+
+    .codehead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 21px 0 0
+    }
+
+    .codehead h3 {
+      margin: 0
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 10px;
+      border: 0;
+      font-weight: 700
+    }
+
+    button.copy {
+      padding: 7px 12px;
+      background: #e8eefc;
+      color: #1d4aa6;
+      font-size: .82rem
+    }
+
+    pre {
+      background: #111c34;
+      color: #e4eaf7;
+      border-radius: 12px;
+      padding: 18px;
+      overflow-x: auto;
+      font-size: .89rem;
+      line-height: 1.7;
+      margin: 8px 0 20px
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, Monaco, monospace
+    }
+
+    p code,
+    li code {
+      color: #1747b9;
+      background: #edf2ff;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-size: .9em
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 14px;
+      align-items: end;
+      margin-top: 20px
+    }
+
+    label {
+      font-size: .87rem;
+      font-weight: 750;
+      display: block
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      border: 1px solid #bac8df;
+      border-radius: 9px;
+      padding: 11px 12px;
+      font: inherit;
+      margin-top: 6px;
+      color: var(--ink);
+      background: white
+    }
+
+    button.primary {
+      background: var(--blue);
+      color: white;
+      padding: 12px 21px;
+      white-space: nowrap
+    }
+
+    button.primary:hover {
+      background: #1948c2
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px
+    }
+
+    .stat {
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f9fbff
+    }
+
+    .stat .name {
+      font-size: .81rem;
+      color: var(--muted)
+    }
+
+    .stat .num {
+      font-size: 1.7rem;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -.03em
+    }
+
+    .stat .target {
+      font-size: .76rem;
+      color: #71819a
+    }
+
+    .chart {
+      margin-top: 18px
+    }
+
+    .charttitle {
+      font-weight: 750;
+      margin: 0 0 7px
+    }
+
+    .barline {
+      display: grid;
+      grid-template-columns: 125px 1fr 74px;
+      gap: 10px;
+      align-items: center;
+      margin: 9px 0;
+      font-size: .87rem
+    }
+
+    .track {
+      height: 18px;
+      border-radius: 6px;
+      background: #e6edfa;
+      overflow: hidden
+    }
+
+    .fill {
+      height: 100%;
+      background: var(--blue);
+      width: 0;
+      transition: width .3s
+    }
+
+    .fill.theory {
+      background: var(--teal)
+    }
+
+    .barvalue {
+      text-align: right;
+      font-variant-numeric: tabular-nums
+    }
+
+    .foot {
+      color: var(--muted);
+      font-size: .86rem;
+      margin-top: 18px
+    }
+
+    .tablewrap {
+      overflow-x: auto
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 14px 0
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    th {
+      background: #f1f5fc;
+      font-size: .87rem
+    }
+
+    td {
+      font-variant-numeric: tabular-nums
+    }
+
+    footer {
+      color: #687992;
+      text-align: center;
+      padding: 4px 20px 40px;
+      font-size: .85rem
+    }
+
+    .error {
+      color: #a12330;
+      font-weight: 650;
+      min-height: 1.3em;
+      margin-top: 8px
+    }
+
+    @media(max-width:780px) {
+      .controls {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media(max-width:480px) {
+      .controls {
+        grid-template-columns: 1fr
+      }
+
+      .stats {
+        grid-template-columns: 1fr
+      }
+
+      .barline {
+        grid-template-columns: 82px 1fr 58px;
+        font-size: .76rem
+      }
+
+      .wrap {
+        padding: 0 15px
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff
+      }
+
+      .hero {
+        background: #172956 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact
+      }
+
+      section {
+        box-shadow: none;
+        break-inside: avoid
+      }
+
+      .controls,
+      button,
+      .topnav {
+        display: none !important
+      }
+
+      pre {
+        white-space: pre-wrap;
+        overflow: visible
+      }
+
+      .wrap {
+        max-width: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <h1>Welford’s Recurrence Formulas &amp; Sampling Statistics</h1>
+      <p>Mathematical derivation, implementation, reproducible experiment and an interpretation of the
+        results.</p>
+      <nav class="topnav" aria-label="Page sections"><a href="#exercise1">Exercise 1: Derivation</a><a
+          href="#exercise2">Exercise 2: Simulation</a><a href="#conclusions">Conclusions</a></nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <section id="exercise1"><span class="tag">EXERCISE 1</span>
+      <h2>Deriving Welford’s Recurrence Formulas</h2>
+      <p>Suppose observations <i>x</i><sub>1</sub>, …, <i>x</i><sub>k</sub> arrive one at a time. Let
+        <i>M</i><sub>k</sub> be their mean and <i>SS</i><sub>k</sub> their sum of squared deviations from that mean:</p>
+      <div class="math">M<sub>k</sub> = (1/k) ∑<sub>i=1</sub><sup>k</sup> x<sub>i</sub> &nbsp;&nbsp; and &nbsp;&nbsp;
+        SS<sub>k</sub> = ∑<sub>i=1</sub><sup>k</sup> (x<sub>i</sub> − M<sub>k</sub>)<sup>2</sup>.</div>
+      <p>We seek updates that use only the previous count, mean, and sum of squares—without storing earlier
+        observations.</p>
+      <h3>Step 1 — Recurrence for the mean (Knuth’s update)</h3>
+      <p>When the next observation <i>x</i><sub>k</sub> arrives, separate it from the previous sum. Writing δ =
+        <i>x</i><sub>k</sub> − <i>M</i><sub>k−1</sub>,</p>
+      <div class="math">M<sub>k</sub> = ((k − 1)M<sub>k−1</sub> + x<sub>k</sub>) / k = M<sub>k−1</sub> + δ/k.</div>
+      <p>Consequently, the difference between the new observation and the updated mean is</p>
+      <div class="math">x<sub>k</sub> − M<sub>k</sub> = δ(1 − 1/k) = δ(k − 1)/k.</div>
+      <h3>Step 2 — Recurrence for the sum of squares (SS)</h3>
+      <p>Split the new squared-deviation sum into the first <i>k</i> − 1 observations and the new observation:</p>
+      <div class="math">SS<sub>k</sub> = ∑<sub>i=1</sub><sup>k−1</sup>(x<sub>i</sub> − M<sub>k</sub>)<sup>2</sup> +
+        (x<sub>k</sub> − M<sub>k</sub>)<sup>2</sup>.</div>
+      <p>For each earlier observation, substitute <i>x</i><sub>i</sub> − <i>M</i><sub>k</sub> = (<i>x</i><sub>i</sub> −
+        <i>M</i><sub>k−1</sub>) − δ/k. Expanding squares, the cross term disappears because the deviations from the old
+        mean add to zero:</p>
+      <div class="math">∑<sub>i=1</sub><sup>k−1</sup>(x<sub>i</sub> − M<sub>k−1</sub>) = 0.</div>
+      <p>Therefore,</p>
+      <div class="math">SS<sub>k</sub> = SS<sub>k−1</sub> + (k − 1)δ<sup>2</sup>/k<sup>2</sup> + δ<sup>2</sup>(k −
+        1)<sup>2</sup>/k<sup>2</sup></div>
+      <div class="math">= SS<sub>k−1</sub> + δ<sup>2</sup>(k − 1)/k.</div>
+      <p>Since <i>x</i><sub>k</sub> − <i>M</i><sub>k</sub> = δ(<i>k</i> − 1)/<i>k</i>, we obtain the standard Welford
+        recurrence:</p>
+      <div class="callout"><strong>Sum-of-squares update</strong>
+        <div class="math" style="background:white;border-color:#087f74">SS<sub>k</sub> = SS<sub>k−1</sub> +
+          (x<sub>k</sub> − M<sub>k−1</sub>)(x<sub>k</sub> − M<sub>k</sub>).</div>
+      </div>
+      <h3>Step 3 — Recurrence for variance</h3>
+      <p>The <strong>unbiased sample variance</strong>, for <i>k</i> ≥ 2, is <i>s</i><sub>k</sub><sup>2</sup> =
+        <i>SS</i><sub>k</sub> / (<i>k</i> − 1). Substituting the SS update gives</p>
+      <div class="math">s<sub>k</sub><sup>2</sup> = [(k − 2)s<sub>k−1</sub><sup>2</sup> + (x<sub>k</sub> −
+        M<sub>k−1</sub>)(x<sub>k</sub> − M<sub>k</sub>)]/(k − 1), &nbsp; k ≥ 3.</div>
+      <p>At <i>k</i> = 2, set <i>s</i><sub>2</sub><sup>2</sup> = <i>SS</i><sub>2</sub>. Alternatively, retain <i>SS</i>
+        throughout and divide once at the end. If instead variance is defined with divisor <i>k</i> (the descriptive or
+        population-form variance), then <i>v</i><sub>k</sub> = <i>SS</i><sub>k</sub>/<i>k</i>, and</p>
+      <div class="math">v<sub>k</sub> = [(k − 1)v<sub>k−1</sub> + (x<sub>k</sub> − M<sub>k−1</sub>)(x<sub>k</sub> −
+        M<sub>k</sub>)] / k.</div>
+      <h3>Step 4 — The core algorithm</h3>
+      <p>Initialize <code>count = 0</code>, <code>mean = 0</code>, and <code>ss = 0</code>. Then execute these
+        <strong>three update statements</strong> for each incoming observation, after incrementing the count:</p>
+      <div class="codehead">
+        <h3>Python implementation</h3>
+      </div>
+      <pre id="python-core"><code>count += 1
+      old_mean = mean; mean += (x - mean) / count
+      ss += (x - old_mean) * (x - mean)</code></pre>
+      <p>After all observations, <code>mean</code> is the sample mean and <code>ss / (count - 1)</code> is the unbiased
+        sample variance (when <code>count &gt;= 2</code>). </p>
+        <h3>Python function</h3>
+        <p>In this project, the welford() function calculates the sample mean and variance of a list of scores using Welford’s algorithm. 
+          It can be reused for every hacker without rewriting the same code, making the program simpler, cleaner, and more efficient.</p>
+      
+      <pre id="python-function"><code>def welford(scores):
+    count, mean, ss = 0, 0.0, 0.0
+    for x in scores:
+        count += 1
+        old_mean = mean; mean += (x - mean) / count
+        ss += (x - old_mean) * (x - mean)
+    if count < 2:
+        raise ValueError("At least two scores are needed for sample variance")
+    return mean, ss / (count - 1)</code></pre>
+    </section>
+    <section id="exercise2"><span class="tag">EXERCISE 2</span>
+      <h2>Sampling Mean and Variance</h2>
+      <h3>1. Choose a fixed probability distribution</h3>
+      <p>Let every penetration attempt receive an <strong>independent, uniformly distributed integer score</strong> from
+        0 through 10 inclusive. Thus <i>P</i>(<i>X</i> = <i>j</i>) = 1/11 for <i>j</i> ∈ {0, 1, …, 10}. The distribution
+        is identical for every attempt and every hacker.</p>
+      <div class="grid">
+        <div class="mini"><span>Theoretical population mean</span><strong>μ = (0 + 1 + ⋯ + 10)/11 = 5</strong></div>
+        <div class="mini"><span>Theoretical population variance</span><strong>σ² = (1/11)∑(j − 5)² = 10</strong></div>
+      </div>
+      <p>The second result follows because ∑<sub>j=0</sub><sup>10</sup>(<i>j</i> − 5)<sup>2</sup> = 110 and 110/11 = 10.
+      </p>
+      <h3>2. Simulate m hackers, with n systems each</h3>
+      <p>Each hacker receives a sequence of <i>n</i> scores. We use Welford’s recurrence to calculate that hacker’s
+        sample mean and unbiased sample variance. Across <i>m</i> hackers, compute:</p>
+      <div class="math">Average of sample means = (1/m) ∑<sub>h=1</sub><sup>m</sup> M<sub>h</sub></div>
+      <div class="math">Average of sample variances = (1/m) ∑<sub>h=1</sub><sup>m</sup> s<sub>h</sub><sup>2</sup></div>
+      <p>For a reproducible experiment, change the seed or the experiment sizes below. A random seed ensures reproducibility by generating the same sequence of random numbers each time the simulation runs. It is optional, but useful for testing and comparing results.</p>
+      <div class="controls"><label>Hackers (m)<input id="m" type="number" min="1" max="100000" step="1"
+            value="1000"></label><label>Systems per hacker (n)<input id="n" type="number" min="2" max="10000" step="1"
+            value="100"></label><label>Random seed<input id="seed" type="number" min="0" max="4294967295" step="1"
+            value="2026"></label><button id="run" class="primary" type="button">Run simulation</button></div>
+      <div class="error" id="error" role="alert"></div>
+      <div class="stats" aria-live="polite">
+        <div class="stat">
+          <div class="name">Average sample mean</div>
+          <div class="num" id="avgmean">—</div>
+          <div class="target">Theoretical μ = 5</div>
+        </div>
+        <div class="stat">
+          <div class="name">Average sample variance</div>
+          <div class="num" id="avgvar">—</div>
+          <div class="target">Theoretical σ² = 10</div>
+        </div>
+        <div class="stat">
+          <div class="name">Mean estimation error</div>
+          <div class="num" id="meanerr">—</div>
+          <div class="target">Average mean − 5</div>
+        </div>
+        <div class="stat">
+          <div class="name">Variance estimation error</div>
+          <div class="num" id="varerr">—</div>
+          <div class="target">Average variance − 10</div>
+        </div>
+      </div>
+      <div class="chart">
+        <p class="charttitle">Comparison: sample averages vs. theoretical values</p>
+        <p>The purpose of this comparison is to check whether the results obtained from the simulation are close to the theoretical values.</p>
+        <div id="bars"></div>
+      </div>
+      <h3>3. Python code for the full experiment</h3>
+      <div class="codehead"><span class="muted">Uses Python’s standard library only. This Python code runs the complete simulation. It generates random scores for each hacker, calculates their sample mean and variance using Welford's algorithm, and computes the averages across all hackers. Finally, it compares these results with the theoretical mean and variance to check how closely the simulation matches the expected values.</span></div>
+      <pre id="python-full"><code>import random
+
+def welford(scores):
+    count, mean, ss = 0, 0.0, 0.0
+    for x in scores:
+        count += 1
+        old_mean = mean; mean += (x - mean) / count
+        ss += (x - old_mean) * (x - mean)
+    if count < 2:
+        raise ValueError("n must be at least 2")
+    return mean, ss / (count - 1)
+
+m, n = 1000, 100
+rng = random.Random(2026)  # Reproducible results
+sample_means, sample_variances = [], []
+
+for _ in range(m):
+    scores = (rng.randint(0, 10) for _ in range(n))
+    avg, variance = welford(scores)
+    sample_means.append(avg)
+    sample_variances.append(variance)
+
+mean_of_means = sum(sample_means) / m
+mean_of_variances = sum(sample_variances) / m
+
+mu, sigma_squared = 5, 10
+print(f"Average sample mean:     {mean_of_means:.4f}")
+print(f"Theoretical mean:        {mu:.4f}")
+print(f"Average sample variance: {mean_of_variances:.4f}")
+print(f"Theoretical variance:    {sigma_squared:.4f}")</code></pre>
+      <p class="muted">The Python code and the HTML simulation may give different results because they generate random numbers differently.
+        However, both use the same probability distribution, formulas and statistical calculations 
+        so the results should be similar.</p>
+    </section>
+    <section id="conclusions"><span class="tag">DISCUSSION &amp; CONCLUSIONS</span>
+      <h2>What Do the Comparisons Show?</h2>
+      <p>For each hacker, the sample mean is a random quantity, so it usually differs from 5. Likewise, an individual
+        sample variance usually differs from 10. However, when we average these estimates over many independent hackers,
+        their overall averages tend to be close to the theoretical values.</p>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Estimator</th>
+              <th>Expected value</th>
+              <th>Interpretation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sample mean, M<sub>h</sub></td>
+              <td>E[M<sub>h</sub>] = μ = 5</td>
+              <td>Unbiased for the population mean</td>
+            </tr>
+            <tr>
+              <td>Sample variance, s<sub>h</sub>²</td>
+              <td>E[s<sub>h</sub>²] = σ² = 10</td>
+              <td>Unbiased for the population variance when divided by n − 1</td>
+            </tr>
+            <tr>
+              <td>Variance of sample mean</td>
+              <td>Var(M<sub>h</sub>) = σ²/n = 10/n</td>
+              <td>Larger samples yield more precise estimates of μ</td>
+            </tr>
+            <tr>
+              <td>Average of m sample means</td>
+              <td>Variance = σ²/(mn) = 10/(mn)</td>
+              <td>Averaging independent estimates reduces fluctuation</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Explanation of Statistical Results</h3>
+      <p>1. The sample mean represents the average score obtained by a single hacker across n penetration attempts. Each hacker may obtain a different sample mean because the scores are randomly generated. However, the expected value of the sample mean is equal to the theoretical population mean (μ = 5). This means that the sample mean is an unbiased estimator: when we repeat the experiment many times, the average of the sample means tends to approach 5.</p>
+      <p>2. The sample variance measures how much a hacker's scores differ from their sample mean. A higher variance indicates that the scores are more spread out, while a lower variance indicates that they are closer together. By dividing the sum of squared deviations (SS) by n − 1 instead of n, we obtain an unbiased estimator of the population variance. Therefore, the average of the sample variances across many independent hackers tends to approach the theoretical variance (σ² = 10).</p>
+      <p>3. The variance of the sample mean measures how much the average scores of different hackers can vary from one another. Unlike the sample variance, which measures differences between individual scores, this quantity measures differences between sample means. As the number of attempts (n) increases, the variance of the sample mean decreases. This means that hackers performing more attempts generally obtain sample means closer to the theoretical mean, making their estimates more precise.</p>
+      <p>4. This calculation measures how much the overall average of the sample means can vary when the entire simulation is repeated. Instead of using the results of a single hacker, we combine the sample means of all m hackers. Because each hacker performs n independent attempts, the overall average is based on mn observations. Increasing the number of hackers (m) or the number of attempts per hacker (n) reduces the variance of this overall average. As a result, the estimated population mean becomes more stable and reliable.</p>
+      <h3>Why the n − 1 denominator matters</h3>
+      <p>If we instead computed each sample variance as <i>SS</i>/<i>n</i>, its expected value would be ((<i>n</i> −
+        1)/<i>n</i>)σ², which is below the theoretical variance. Using <i>SS</i>/(<i>n</i> − 1) corrects this downward
+        bias. The distinction is especially important when <i>n</i> is small.</p>
+      <h3>Why this is useful in inferential statistics</h3>
+      <p>In real applications, the population parameters μ and σ² are usually unknown. Statistical inference uses finite
+        random samples to estimate those unknown values. This exercise illustrates <strong>unbiased estimation</strong>
+        (correct on average across repeated samples), <strong>sampling variability</strong> (different samples lead to
+        different answers), and the <strong>law of large numbers</strong> (averages of independent estimates stabilize
+        as the number of repetitions grows).</p>
+      <div class="callout"><strong>Final conclusion.</strong> Welford's algorithm is an efficient way to calculate the mean and variance. Instead of storing all the scores and calculating everything at the end, it updates the results every time a new score is generated. This saves memory and helps avoid calculation errors caused by limited numerical precision.
+        The simulation shows that the average of the sample means gets close to the theoretical mean (μ = 5), while the average of the sample variances gets close to the theoretical variance (σ² = 10).
+        As the number of hackers increases, these averages generally become closer to the theoretical values because random differences tend to balance out.
+        This is useful in inferential statistics because it shows how we can use sample data to estimate the mean and variance of a larger population.</div>
+      <p class="muted">Assumptions: All scores are generated independently using the same probability distribution, where each integer from 0 to 10 has an equal chance of being selected. Each hacker must perform at least two attempts to calculate the sample variance.
+        Since the scores are random, the simulation results may not exactly match the theoretical mean (5) and variance (10). However, with more independent hackers, the averages generally become closer to these theoretical values.</p>
+    </section>
+  </main>
+  <script>
+    (function () {
+      'use strict';
+      const $ = (id) => document.getElementById(id);
+      function mulberry32(seed) {let a = seed >>> 0; return function () {a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296;};}
+      function run() {
+        const m = Number($('m').value), n = Number($('n').value), seed = Number($('seed').value);
+        if (!Number.isInteger(m) || m < 1 || m > 100000 || !Number.isInteger(n) || n < 2 || n > 10000 || !Number.isSafeInteger(seed) || seed < 0 || seed > 4294967295) {$('error').textContent = 'Enter whole numbers: 1 ≤ m ≤ 100,000; 2 ≤ n ≤ 10,000; 0 ≤ seed ≤ 4,294,967,295.'; return;}
+        if (m * n > 3000000) {$('error').textContent = 'For quick in-browser results, please keep m × n at or below 3,000,000.'; return;}
+        $('error').textContent = '';
+        const rng = mulberry32(seed); let totalMean = 0, totalVar = 0;
+        for (let h = 0; h < m; h++) {
+          let mean = 0, ss = 0;
+          for (let k = 1; k <= n; k++) {
+            const x = Math.floor(rng() * 11);
+            const delta = x - mean;
+            mean += delta / k;
+            ss += delta * (x - mean);
+          }
+          totalMean += mean; totalVar += ss / (n - 1);
+        }
+        const avgMean = totalMean / m, avgVar = totalVar / m;
+        $('avgmean').textContent = avgMean.toFixed(4); $('avgvar').textContent = avgVar.toFixed(4);
+        $('meanerr').textContent = (avgMean - 5 >= 0 ? '+' : '') + (avgMean - 5).toFixed(4);
+        $('varerr').textContent = (avgVar - 10 >= 0 ? '+' : '') + (avgVar - 10).toFixed(4);
+        const pairs = [['Mean', 'Sample average', avgMean, '#2759d8'], ['Mean', 'Theoretical', 5, '#087f74'], ['Variance', 'Sample average', avgVar, '#2759d8'], ['Variance', 'Theoretical', 10, '#087f74']];
+        const wrap = $('bars'); wrap.replaceChildren();
+        for (const [type, label, v, color] of pairs) {
+          const line = document.createElement('div'); line.className = 'barline';
+          const t = document.createElement('span'); t.textContent = type + ' · ' + (label === 'Theoretical' ? 'Theory' : 'Sample');
+          const track = document.createElement('div'); track.className = 'track';
+          const fill = document.createElement('div'); fill.className = 'fill'; fill.style.background = color; fill.style.width = (Math.max(0, Math.min(100, v / (type === 'Mean' ? 7 : 13) * 100))) + '%';
+          const value = document.createElement('span'); value.className = 'barvalue'; value.textContent = v.toFixed(3);
+          track.appendChild(fill); line.append(t, track, value); wrap.appendChild(line);
+        }
+      }
+      $('run').addEventListener('click', run);
+      document.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', () => {
+        const txt = $(btn.dataset.copy).textContent;
+        if (navigator.clipboard && window.isSecureContext) {navigator.clipboard.writeText(txt).then(() => {btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy code', 1200);}).catch(() => {btn.textContent = 'Select code to copy';});}
+        else {btn.textContent = 'Select code to copy';}
+      }));
+      run();
+    })();
+  </script>
+</body>
+
+</html>
