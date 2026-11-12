@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Numerical Analysis Laboratory | Riemann · Lebesgue · Normal CDF</title>
+  <style>
+    :root {
+      --bg: #090f1e;
+      --surface: #111b2e;
+      --surface2: #16243a;
+      --border: #29394f;
+      --muted: #9eb0c7;
+      --text: #eef5ff;
+      --cyan: #55d9e8;
+      --violet: #b5a4ff;
+      --gold: #ffcb80;
+      --green: #72e8ba;
+      --red: #ff9c9c;
+      --radius: 18px
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse 750px 480px at 80% -4%, #18375c65, transparent), var(--bg);
+      color: var(--text);
+      font: 15px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif
+    }
+
+    a {
+      color: var(--cyan)
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: auto;
+      padding: 0 24px
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      background: #090f1edc;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(15px)
+    }
+
+    .head {
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: -.4px;
+      font-size: 17px
+    }
+
+    .brand span {
+      color: var(--cyan)
+    }
+
+    nav {
+      display: flex;
+      gap: 8px
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      padding: 8px 13px;
+      border-radius: 10px;
+      font-size: 13px
+    }
+
+    nav a:hover {
+      background: var(--surface2);
+      color: white
+    }
+
+    .hero {
+      padding: 70px 0 38px
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase
+    }
+
+    .hero h1 {
+      font-size: clamp(35px, 6vw, 65px);
+      line-height: 1.12;
+      letter-spacing: -2px;
+      max-width: 930px;
+      margin: 16px 0
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--cyan)
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 800px
+    }
+
+    .pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 24px
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      background: #15233c;
+      border-radius: 30px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #c4d5e8
+    }
+
+    .section {
+      padding: 35px 0 42px;
+      scroll-margin-top: 80px
+    }
+
+    .section h2 {
+      font-size: 30px;
+      letter-spacing: -.8px;
+      margin: 0 0 10px
+    }
+
+    .section>p,
+    .section-intro {
+      color: var(--muted);
+      max-width: 850px
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: linear-gradient(155deg, #152138, #101928);
+      border-radius: var(--radius);
+      padding: 24px
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px
+    }
+
+    .grid3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px
+    }
+
+    .wide {
+      grid-column: 1/-1
+    }
+
+    .card h3 {
+      font-size: 18px;
+      margin: 0 0 10px
+    }
+
+    .muted,
+    .hint {
+      color: var(--muted)
+    }
+
+    .hint {
+      font-size: 13px
+    }
+
+    .eq {
+      display: block;
+      font-family: Georgia, serif;
+      font-size: 19px;
+      color: #d8edfa;
+      margin: 15px 0;
+      overflow: auto;
+      white-space: nowrap
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #c9d9ed;
+      margin: 0 0 8px
+    }
+
+    select,
+    input[type=number] {
+      width: 100%;
+      border: 1px solid #38506b;
+      border-radius: 10px;
+      background: #0c1628;
+      color: white;
+      padding: 12px;
+      font: inherit;
+      outline: none
+    }
+
+    select:focus,
+    input:focus {
+      border-color: var(--cyan)
+    }
+
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--cyan)
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      align-items: end;
+      gap: 16px
+    }
+
+    .button {
+      background: var(--cyan);
+      color: #061322;
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 19px;
+      font-weight: 800;
+      cursor: pointer;
+      min-height: 47px
+    }
+
+    .button:hover {
+      filter: brightness(1.1)
+    }
+
+    .button.secondary {
+      background: #223550;
+      color: #d7eaff;
+      border: 1px solid #395473
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px
+    }
+
+    .stat {
+      background: #0b1525;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      min-width: 0
+    }
+
+    .stat .num {
+      font-size: clamp(18px, 2.3vw, 27px);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere
+    }
+
+    .stat small {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .8px
+    }
+
+    .cyan {
+      color: var(--cyan)
+    }
+
+    .violet {
+      color: var(--violet)
+    }
+
+    .gold {
+      color: var(--gold)
+    }
+
+    .green {
+      color: var(--green)
+    }
+
+    .chart {
+      height: 275px;
+      width: 100%;
+      display: block
+    }
+
+    .chart-tall {
+      height: 320px
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px
+    }
+
+    .legend b {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 7px
+    }
+
+    .table-scroll {
+      overflow-x: auto
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+      white-space: nowrap
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 13px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    th {
+      color: #b6c9df;
+      background: #1b2a40
+    }
+
+    td {
+      font-variant-numeric: tabular-nums
+    }
+
+    tr:hover td {
+      background: #18263b
+    }
+
+    .note {
+      border-left: 3px solid var(--gold);
+      background: #3f2e242e;
+      border-radius: 0 10px 10px 0;
+      padding: 13px 18px;
+      color: #e3d5c1;
+      margin-top: 18px
+    }
+
+    .info {
+      border-left-color: var(--cyan);
+      background: #193c4c3b;
+      color: #cceaf4
+    }
+
+    .bad {
+      color: var(--red)
+    }
+
+    .good {
+      color: var(--green)
+    }
+
+    ul {
+      padding-left: 21px
+    }
+
+    .steps li {
+      margin: 11px 0;
+      color: #c2d1e3
+    }
+
+    code {
+      background: #24354a;
+      padding: 2px 5px;
+      border-radius: 5px;
+      color: #b2f3f5
+    }
+
+    .references li {
+      margin-bottom: 9px;
+      overflow-wrap: anywhere
+    }
+
+    footer {
+      padding: 35px 0 60px;
+      color: var(--muted);
+      border-top: 1px solid var(--border)
+    }
+
+    .tag {
+      font-size: 12px;
+      color: var(--cyan);
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase
+    }
+
+    .chart-caption {
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .inline-select {
+      display: flex;
+      gap: 12px;
+      align-items: center
+    }
+
+    .inline-select>* {
+      flex: 1
+    }
+
+    .small {
+      font-size: 12px
+    }
+
+    .float-right {
+      float: right
+    }
+
+    @media(max-width:800px) {
+
+      .grid,
+      .grid3 {
+        grid-template-columns: 1fr
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr
+      }
+
+      nav a {
+        font-size: 11px;
+        padding: 6px
+      }
+
+      .hero {
+        padding-top: 42px
+      }
+    }
+
+    @media(max-width:500px) {
+      .wrap {
+        padding: 0 15px
+      }
+
+      .head {
+        height: auto;
+        min-height: 70px;
+        flex-wrap: wrap;
+        padding: 13px 0
+      }
+
+      nav {
+        width: 100%;
+        justify-content: space-between
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .card {
+        padding: 16px
+      }
+
+      .hero h1 {
+        letter-spacing: -1px
+      }
+
+      .section h2 {
+        font-size: 25px
+      }
+    }
+
+    /* Intestazione gerarchica della tabella Riemann / Lebesgue */
+    .comparison-table {
+      min-width: 970px;
+      table-layout: fixed
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: center
+    }
+
+    .comparison-table thead tr:first-child th {
+      font-size: 16px;
+      font-weight: 800;
+      color: #f4f8ff;
+      padding: 15px 12px;
+      border-bottom: 2px solid var(--border)
+    }
+
+    .comparison-table .group-r {
+      background: #164052;
+      color: var(--cyan) !important
+    }
+
+    .comparison-table .group-l {
+      background: #352b57;
+      color: var(--violet) !important
+    }
+
+    .comparison-table thead tr:nth-child(2) th {
+      font-size: 12px;
+      white-space: normal;
+      line-height: 1.3
+    }
+
+    .comparison-table thead tr:nth-child(2) th:nth-child(-n+4) {
+      background: #142e41
+    }
+
+    .comparison-table thead tr:nth-child(2) th:nth-child(n+5) {
+      background: #2b2547
+    }
+
+    .comparison-table thead tr:nth-child(2) th:nth-child(5),
+    .comparison-table tbody td:nth-child(5) {
+      border-left: 3px solid #69758b
+    }
+
+    .comparison-table tbody tr:nth-child(even) td {
+      background: #121f31
+    }
+
+    .comparison-table tbody td:nth-child(3),
+    .comparison-table tbody td:nth-child(7) {
+      color: var(--gold)
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap head">
+      <div class="brand"> <span style="color:#7890a9;font-weight:400"></div>
+      <nav><a href="#es1">Ex. 1 · Integrals</a><a href="#es2">Ex. 2 · CDF</a><a href="#conclusioni">Conclusions</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Two ways to integrate.<br><em>One distribution to compute.</em></h1>
+      <p class="lead">In this project, we explore different methods of numerical integration. First, we compare the
+        Riemann and Lebesgue approaches by applying them to several functions and observing how their accuracy changes.
+        Then, we examine different numerical methods for calculating the cumulative distribution function (CDF) of the
+        standard normal distribution.</p>
+      <div class="pills"><span class="pill">01 · Riemann vs Lebesgue</span><span class="pill">02 · Normal
+          CDF</span><span class="pill">Interactive charts</span><span class="pill">No external libraries</span></div>
+    </section>
+    <section id="es1" class="section">
+      <div class="tag">Exercise 1</div>
+      <h2>Riemann and Lebesgue integration</h2>
+      <p class="section-intro">Riemann and Lebesgue integration use different approaches to calculate an integral.
+        Riemann integration divides the domain into smaller intervals and approximates the area using rectangles.
+        Lebesgue integration, instead, divides the range of the function into value levels and measures the parts of the
+        domain corresponding to each level.
+
+        In this exercise, we apply both methods to different functions and compare their results with the exact
+        integral. By increasing the number of subdivisions, we can observe how the numerical error changes and which
+        method gives a more accurate approximation. We also consider functions that behave differently under the two
+        definitions of integration.</p>
+
+      <div class="card">
+        <p>Select a function and adjust the number of domain partitions (Riemann) and value levels (Lebesgue). The
+          calculator approximates the integral using both methods and compares the results, showing the numerical errors
+          and how they decrease as the number of subdivisions increases. Among the available functions, there are two
+          interesting cases:</p>
+
+        <h3>Rational / Irrational (Dirichlet Function)</h3>
+        <p>
+          This function equals 1 when x is rational and 0 when x is irrational.
+          It is discontinuous at every point, so it is not Riemann integrable.
+          However, its Lebesgue integral is 0 because rational numbers
+          have measure zero.
+        </p>
+
+        <h3>Popcorn (Thomae's Function)</h3>
+        <p>
+          This function equals 1/q when x is a rational number written as
+          p/q in lowest terms, and 0 when x is irrational.
+          Rational numbers with smaller denominators produce taller spikes,
+          giving the function its popcorn-like appearance.
+          Unlike the Dirichlet function, it is integrable under both
+          Riemann and Lebesgue, with an integral equal to 0.
+        </p>
+
+        <p>
+          <strong>Note:</strong> These functions are difficult to approximate
+          numerically because computers only evaluate a finite number of points.
+          The numerical results may therefore differ from their theoretical behavior.
+        </p>
+
+
+        <div class="control-grid">
+          <div><label for="fn">Function to analyze</label><select id="fn">
+              <option value="square">f(x) = x² · [0, 1]</option>
+              <option value="sin">f(x) = sin(x) · [0, π]</option>
+              <option value="abs">f(x) = |x − 0.5| · [0, 1]</option>
+              <option value="step">f(x) = 1 or 3 at threshold 0.5 · [0, 1]</option>
+              <option value="indicator">f(x) = 1 if x &lt; 0.5; otherwise 0</option>
+              <option value="singular">f(x) = 1/√x · (0, 1]</option>
+              <option value="dirichlet">Dirichlet · rationals / irrationals</option>
+              <option value="thomae">Thomae · popcorn function</option>
+            </select></div>
+          <div><label for="subdiv">Domain partitions <span id="ntext" class="cyan">4</span></label><input type="range"
+              id="subdiv" min="1" max="12" value="2" step="1"></div>
+          <div><label for="levels">Value levels <span id="mtext" class="violet">4</span></label><input type="range"
+              id="levels" min="1" max="12" value="2" step="1"></div><button class="button"
+            id="run1">Recalculate</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><small>Exact integral</small>
+            <div class="num" id="exact">—</div>
+          </div>
+          <div class="stat"><small>Riemann · midpoints</small>
+            <div class="num cyan" id="rval">—</div>
+          </div>
+          <div class="stat"><small>Lebesgue · levels</small>
+            <div class="num violet" id="lval">—</div>
+          </div>
+          <div class="stat"><small>Absolute error R / L</small>
+            <div class="num gold" id="errors">—</div>
+          </div>
+        </div>
+        <p id="fnnote" class="hint"></p>
+        <div class="note info" id="changeNote" aria-live="polite">Move the sliders: results update automatically. Start
+          with 2, 4 or 8 subdivisions to see the errors more clearly.</div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>What are you partitioning? Look at the diagrams</h3>
+        <p class="hint">On the left, <strong>Riemann</strong> divides the domain (x-axis) into N vertical strips. On the
+          right, <strong>Lebesgue</strong> divides the heights, i.e. the values of f(x), into M horizontal bands and
+          measures the set of x-values above each level. <strong>Value bands are not intervals on the x-axis.</strong>
+        </p>
+        <div class="grid">
+          <div>
+            <h3 class="cyan">Riemann · N intervals on the x-axis</h3><canvas id="riemannVisual" class="chart" role="img"
+              aria-label="Vertical Riemann rectangles"></canvas>
+          </div>
+          <div>
+            <h3 class="violet">Lebesgue · M bands on the y-axis</h3><canvas id="lebesgueVisual" class="chart" role="img"
+              aria-label="Horizontal value bands and preimages"></canvas>
+          </div>
+        </div>
+        <p class="hint" id="visualNote"></p>
+        <p class="hint">Example with f(x)=x² and 4 levels: value bands [0, 0.25), [0.25, 0.5), [0.5, 0.75), [0.75, 1].
+          The preimage of [0.25, 0.5) consists of x-values between √0.25=0.5 and √0.5≈0.707. Its measure is
+          approximately 0.207.</p>
+      </div>
+      <div class="grid" style="margin-top:18px">
+        <div class="card">
+          <h3>Function plot</h3><canvas id="functionGraph" class="chart" role="img"
+            aria-label="Plot of the selected function"></canvas>
+          <p id="graphnote" class="chart-caption">Sampled function plot.</p>
+        </div>
+        <div class="card">
+          <h3>Error convergence</h3><canvas id="convergenceGraph" class="chart" role="img"
+            aria-label="Absolute error without logarithms"></canvas>
+          <div class="legend"><span><b style="background:var(--cyan)"></b>Riemann</span><span><b
+                style="background:var(--violet)"></b>Lebesgue</span></div>
+          <p class="chart-caption">The x-axis shows the number of subdivisions. The y-axis shows the actual, nonnegative
+            error. The closer a curve gets to zero, the more accurate the result. The tested subdivision counts (8, 16,
+            32, ...) are shown at equally spaced positions for readability; the horizontal spacing is not proportional
+            to N.</p>
+        </div>
+        <div class="card wide">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+            <h3>Convergence table (fixed values for comparison)</h3>
+          </div>
+          <p class="hint"><strong>How to read this table:</strong> the first four columns describe the <strong>Riemann
+              method</strong>, and the last four describe the <strong>Lebesgue method</strong>. <strong>N</strong> is
+            the number of intervals along the x-axis, while <strong>M</strong> is the number of value bands along the
+            y-axis. Each method reports an <strong>approximate integral</strong> and its <strong>absolute
+              error</strong>, the distance from the exact value. Smaller errors mean better accuracy. <strong>Time
+              (ms)</strong> is the average execution time in milliseconds for one integral calculation (1 ms = 0.001 s).
+            N and M increase together from row to row to compare convergence. Times depend on your device and browser
+            and are most useful as approximate comparisons.</p>
+          <div class="table-scroll">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th colspan="4" scope="colgroup" class="group-r">Riemann method</th>
+                  <th colspan="4" scope="colgroup" class="group-l">Lebesgue method</th>
+                </tr>
+                <tr>
+                  <th scope="col">Partitions (N)</th>
+                  <th scope="col">Approximate integral</th>
+                  <th scope="col">Absolute error</th>
+                  <th scope="col">Time (ms)</th>
+                  <th scope="col">Levels (M)</th>
+                  <th scope="col">Approximate integral</th>
+                  <th scope="col">Absolute error</th>
+                  <th scope="col">Time (ms)</th>
+                </tr>
+              </thead>
+              <tbody id="table1"></tbody>
+            </table>
+          </div>
+          <p class="hint"><strong>Note:</strong> this table uses a fixed sequence with N=M to compare convergence.
+            Moving the sliders changes the results above and the subdivision diagrams, but not this fixed sequence.
+            Execution times are estimated by averaging repeated runs in the browser; small fluctuations are normal. The
+            table benchmarks the integral algorithms, not graph rendering. For the Dirichlet function, the Riemann
+            values reflect rational sample points only; they do not represent a converging integral.</p>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:18px">
+        <div class="card">
+          <h3>How does the Riemann algorithm work?</h3><span class="eq">Rₙ = ∑ᵢ f(a + (i+½)Δx) Δx</span>
+          <p>The <strong>midpoint rule</strong> is applied over <em>N</em> equal intervals. It is a Riemann sum, often
+            with O(N⁻²) error for smooth functions. Discontinuities and singularities change this behavior.</p>
+        </div>
+        <div class="card">
+          <h3>How does the Lebesgue algorithm work?</h3><span class="eq">Lₘ = Δt ∑ⱼ μ({x : f(x) ≥ tⱼ})</span>
+          <p>The <strong>value</strong> axis is discretized, and the exact measures of the superlevel-set preimages are
+            evaluated for these specific functions. The midpoint rule is then used over the levels. For 1/√x, the value
+            integral is truncated at a finite threshold.</p>
+        </div>
+      </div>
+      <div class="note"><strong>Important qualifications.</strong>
+        <p>
+          The Lebesgue method used in this project is designed for the
+          selected functions and may not work directly with other functions.
+        </p>
+
+        <p>Some functions also require special attention:</p>
+
+        <ul>
+          <li>
+            <strong>1/√x:</strong> Its integral equals 2, but the function
+            becomes infinitely large near x = 0, so standard Riemann
+            integration cannot be applied directly.
+          </li>
+
+          <li>
+            <strong>Dirichlet function:</strong> It can be integrated using
+            Lebesgue integration, but not Riemann integration.
+          </li>
+
+          <li>
+            <strong>Thomae function (Popcorn):</strong> Both methods can
+            integrate it, giving a result of 0.
+          </li>
+        </ul>
+
+        <p>
+          For these particular functions, numerical approximations may not
+          fully reflect their mathematical behavior. Therefore, the
+          theoretical results are important when interpreting the calculations.
+        </p>
+      </div>
+    </section>
+    <section id="es2" class="section">
+      <div class="tag">Exercise 2</div>
+      <h2>Standard normal cumulative distribution function (CDF)</h2>
+      <p class="section-intro">In this exercise, we calculate the cumulative distribution function (CDF) of the standard
+        normal distribution, which gives the probability that a normally distributed variable takes a value less than or
+        equal to a given number z. This probability corresponds to the area under the bell-shaped curve to the left of
+        z.
+
+        Since this area cannot be calculated using elementary functions, we use three numerical methods: Simpson's rule,
+        which approximates the area using small intervals; the erf power series, which calculates the probability
+        through a mathematical series; and an approximation of the error function (erf), which provides a fast estimate.
+
+        We then compare the results of these methods to see how accurate and efficient they are.</p>
+
+      <h3>Mathematical Definition of the CDF</h3>
+
+      <p>
+        The standard normal CDF is calculated by integrating the
+        probability density function from negative infinity up to
+        a given value z. This integral represents the probability
+        that a standard normal random variable is less than or equal to z.
+      </p>
+
+      <div class="eq">
+        Φ(z) = (1/√(2π)) ∫₋∞ᶻ e^(−t²/2) dt
+      </div>
+
+      <p>
+        However, this integral cannot be expressed using elementary
+        functions. Instead, it can be written exactly using the
+        <strong>error function (erf)</strong>:
+      </p>
+
+      <div class="eq">
+        Φ(z) = ½[1 + erf(z/√2)]
+      </div>
+
+      <p>
+        Here, z is the value at which we want to calculate the
+        cumulative probability, while erf is a special mathematical
+        function related to the integral of the Gaussian curve.
+        Although this formula is exact, numerical algorithms are
+        still needed to evaluate it on a computer.
+      </p>
+
+      <p>
+        The calculator below uses three different numerical methods
+        to approximate this probability and compare their accuracy
+        and computational efficiency.
+      </p>
+
+      <div class="card"><span class="eq"></span>
+        <div class="control-grid" style="grid-template-columns:2fr 1.5fr auto">
+          <div><label for="z">Point z (from −8 to 8)</label><input type="number" id="z" min="-8" max="8" step="0.25"
+              value="1"></div>
+          <div><label for="precision">Simpson subdivisions (N) <span class="cyan" id="ptext">128</span></label><input
+              type="range" id="precision" min="3" max="12" step="1" value="7"></div><button class="button"
+            id="run2">Calculate CDF</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><small>Numerical reference</small>
+            <div id="refCDF" class="num green">—</div>
+          </div>
+          <div class="stat"><small>Simpson</small>
+            <div id="simpsonCDF" class="num cyan">—</div>
+          </div>
+          <div class="stat"><small>erf series</small>
+            <div id="seriesCDF" class="num violet">—</div>
+          </div>
+          <div class="stat"><small>erf approximation</small>
+            <div id="approxCDF" class="num gold">—</div>
+          </div>
+        </div>
+        <p class="hint" id="cdfnote"></p>
+        <p class="hint" id="cdftimes"></p>
+        <div class="table-scroll">
+          <table aria-label="CDF accuracy and performance at selected z">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Absolute error</th>
+                <th>Avg. time (ms)</th>
+              </tr>
+            </thead>
+            <tbody id="cdfPerformance"></tbody>
+          </table>
+        </div>
+        <p class="hint">Time is averaged over repeated function calls. Very short times may fluctuate because of browser
+          scheduling and measurement resolution.</p>
+      </div>
+      <div class="grid" style="margin-top:18px">
+        <div class="card">
+          <h3>Cumulative area under the bell curve</h3><canvas id="normalGraph" class="chart chart-tall" role="img"
+            aria-label="Normal density and cumulative area"></canvas>
+          <p class="chart-caption">
+            This graph shows the standard normal distribution, represented by a bell-shaped curve. The horizontal axis
+            represents the values of z, while the vertical axis represents the probability density.
+
+            The shaded area represents the cumulative probability, meaning the probability that a normally distributed
+            variable takes a value less than or equal to the selected z.
+
+            By changing z in the calculator, the shaded area changes. For example, when z = 0, the shaded area covers
+            half of the curve, corresponding to a probability of 0.5 (50%). When z increases, the shaded area becomes
+            larger and the cumulative probability approaches 1 (100%).</p>
+        </div>
+        <div class="card">
+          <h3>Error versus Simpson subdivisions</h3><canvas id="cdfErrorGraph" class="chart chart-tall" role="img"
+            aria-label="Error convergence for Simpson and the series"></canvas>
+          <div class="legend"><span><b style="background:var(--cyan)"></b>Simpson</span><span><b
+                style="background:var(--violet)"></b>erf series</span></div>
+          <p class="chart-caption">This graph shows how the accuracy of the two numerical methods changes as we increase
+            the number of calculations.
+
+            The horizontal axis (X) represents the number of intervals used by Simpson's rule or the maximum number of
+            terms used in the erf series. The vertical axis (Y) represents the absolute error, calculated as the
+            difference between the numerical result and the reference CDF value.
+
+            The blue line represents Simpson's rule, while the purple line represents the erf series.
+
+            As the number of intervals or terms increases, the error generally decreases, meaning that the calculated
+            CDF becomes more accurate. A line closer to zero indicates a more precise result.
+
+            The graph allows us to compare how quickly the two methods converge toward the reference value.</p>
+        </div>
+        <div class="card wide">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <h3>Results for different z values</h3>
+          </div>
+          <p class="hint"><strong>How to read this table:</strong> each row represents a standard-normal
+            <strong>z</strong> value. <strong>Reference</strong> is the cumulative probability used for comparison.
+            <strong>Simpson</strong>, <strong>erf series</strong>, and <strong>erf approximation</strong> are the three
+            computed values. The <strong>|Error|</strong> columns show the absolute difference from the reference:
+            values closer to zero are more accurate. Changing Simpson resolution affects its values and errors; the
+            other two methods do not depend on that slider.</p>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>z</th>
+                  <th>Reference</th>
+                  <th>Simpson</th>
+                  <th>|Error| Simpson</th>
+                  <th>erf series</th>
+                  <th>|Error| series</th>
+                  <th>erf approximation</th>
+                  <th>|Error| approximation</th>
+                </tr>
+              </thead>
+              <tbody id="table2"></tbody>
+            </table>
+          </div>
+          <p class="hint">For z = −3, −2, −1, 0, 1, 2, 3, high-precision checkpoints are used and can be compared with
+            the rounded NIST table. For other z-values, a high-resolution Simpson calculation is used as an internal
+            numerical check (not an independent verification).</p>
+        </div>
+      </div>
+      <div class="grid3" style="margin-top:18px">
+        <div class="card">
+          <h3>① Composite Simpson rule</h3><span class="eq">Φ(z) = ½ + ∫₀ᶻ φ(t) dt</span>
+          <p>Simpson's rule is a numerical method used to approximate the area under a curve. Instead of calculating the
+            integral directly, it divides the interval into smaller parts and uses parabolas to estimate the area.
+            For the normal CDF, we use:
+            Φ(z) = ½ + ∫₀ᶻ φ(t) dt
+            The value ½ represents the probability to the left of zero, while the integral calculates the additional
+            area between 0 and z (or subtracts it when z is negative).
+            Increasing the number of subdivisions (N) generally makes the result more accurate, but also requires more
+            calculations.</p>
+        </div>
+        <div class="card">
+          <h3>② Power series</h3><span class="eq">erf(u) = (2/√π) Σₖ (−1)ᵏ u²ᵏ⁺¹ / [k!(2k+1)]</span>
+          <p>This method calculates the normal CDF using the error function, called erf.
+            Instead of dividing the area into intervals, it approximates erf by adding a sequence of mathematical terms:
+            erf(u) = (2/√π) Σₖ (−1)ᵏ u²ᵏ⁺¹ / [k!(2k+1)]
+            Each additional term can improve the approximation. The method works well for values close to zero, but can
+            become numerically inaccurate for large values of |z|.
+            In our calculator, when |z| is greater than 5, we use an alternative integration method to avoid this
+            problem.</p>
+        </div>
+        <div class="card">
+          <h3>③ erf approximation</h3><span class="eq">erf(u) ≈ sgn(u)·[1 − P(t)e^(−u²)]</span>
+          <p>This method also uses the error function, but instead of calculating a long series, it uses a predefined
+            mathematical formula that gives a good approximation with only a few calculations.
+            erf(u) ≈ sgn(u) · [1 − P(t)e^(−u²)]
+            Here, P(t) is a polynomial designed to approximate the error function accurately.
+            Unlike Simpson's rule or the power series, this method does not require increasing the number of intervals
+            or terms.
+            It is therefore very fast, although its result may be slightly less accurate than the other methods when
+            they are calculated with sufficient precision.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>Why Can't the Normal CDF Be Calculated Using Elementary Functions?</h3>
+        <p>
+          The standard normal CDF is defined using an integral involving
+          the function e<sup>-x²/2</sup>. Unlike many other integrals,
+          this one cannot be solved using only elementary functions,
+          such as polynomials, exponentials, logarithms or
+          trigonometric functions. This result is explained by <strong>Liouville's theorem</strong>, which provides
+          mathematical conditions for determining whether
+          an integral can be expressed using elementary functions.
+          In the case of the normal distribution, these conditions
+          cannot be satisfied. Therefore, we cannot find an
+          elementary formula for its integral.
+          However, this does not mean that the CDF cannot be calculated.
+          We can use numerical methods or special mathematical functions instead.
+        </p>
+
+        <h3>The Error Function (erf)</h3>
+
+        <p>
+          To represent the normal CDF exactly, mathematicians introduce
+          a special function called the <strong>error function (erf)</strong>. The relationship between the two
+          functions is:</p>
+
+        <div class="eq">
+          Φ(z) = ½ [1 + erf(z/√2)]
+        </div>
+
+        <p>
+          This formula provides an exact mathematical expression
+          for the normal CDF.
+          However, since erf is itself defined through an integral,
+          computers still need numerical algorithms to calculate its values.
+          This is why methods such as Simpson's rule, power series
+          and erf approximations are useful.
+        </p>
+
+        <h3>Accuracy and Numerical Limitations</h3>
+
+        <p>
+          To evaluate the accuracy of our algorithms, we compare
+          their results with known reference values of the
+          standard normal CDF.
+          Some of these reference values can be checked using
+          tables published by the
+          <strong>National Institute of Standards and Technology (NIST)</strong>.
+          The methods generally produce accurate results, but their
+          precision depends on the value of z and the algorithm used.
+          For example, when z is far from zero, some calculations
+          can lose precision because they involve extremely small
+          probabilities or subtraction between numbers that
+          are almost equal.
+          In our calculator, we handle these situations by using
+          alternative calculations for large values of z.
+          In particular:
+        </p>
+
+        <ul>
+          <li>
+            <strong>For |z| > 4:</strong> Simpson's method calculates
+            the small remaining probability directly to avoid
+            losing numerical precision.
+          </li>
+
+          <li>
+            <strong>For |z| > 5:</strong> The power series is replaced
+            with a more stable numerical integration method.
+          </li>
+        </ul>
+
+        <p>
+          These adjustments help maintain accurate results
+          across the interval considered in this project.
+        </p>
+      </div>
+    </section>
+
+    <section id="conclusioni" class="section">
+
+      <div class="tag">Final Discussion</div>
+      <h2>Results and Conclusions</h2>
+
+      <div class="grid">
+
+        <!-- RIEMANN AND LEBESGUE -->
+        <div class="card">
+          <h3>Riemann and Lebesgue Integration</h3>
+
+          <p>
+            In the first exercise, we compared Riemann and Lebesgue
+            integration by applying both numerical approaches to
+            different functions. By analyzing the results, errors
+            and convergence tables, we can make the following
+            observations:
+          </p>
+
+          <ul class="steps">
+
+            <li>
+              <strong>Both approaches converge to the same result
+                for Riemann-integrable functions.</strong>
+              When a bounded function is Riemann integrable,
+              its Lebesgue integral has the same value.
+              As we increase the number of subdivisions,
+              both numerical approximations generally get
+              closer to the exact integral.
+              This can be observed in functions such as
+              x² and sin(x).
+            </li>
+
+            <li>
+              <strong>The two methods can converge at different
+                speeds.</strong>
+              Increasing the number of domain partitions (N)
+              or value levels (M) usually reduces the numerical
+              error. However, the speed of convergence depends
+              on the properties of the function and on the
+              approximation method.
+              For example, a smooth function may be approximated
+              very accurately using Riemann's midpoint rule,
+              while the Lebesgue-based method may require
+              more levels to obtain similar accuracy.
+            </li>
+
+            <li>
+              <strong>The Dirichlet function is not Riemann
+                integrable.</strong>
+              This function equals 1 for rational numbers
+              and 0 for irrational numbers.
+              Since both types of numbers are present in
+              every interval, Riemann sums can give different
+              results depending on the points selected.
+              However, the set of rational numbers has
+              measure zero, so its Lebesgue integral is 0.
+              This example shows an important difference
+              between the two definitions of integration.
+            </li>
+
+            <li>
+              <strong>The Thomae (Popcorn) function is
+                integrable using both methods.</strong>
+              Although the function is discontinuous at
+              every rational number, its values become
+              smaller for rational numbers with larger
+              denominators.
+              The function is continuous at every irrational
+              number and is Riemann integrable.
+              Both the Riemann and Lebesgue integrals equal 0.
+              This shows that a function can have infinitely
+              many discontinuities and still be integrable
+              using both approaches.
+            </li>
+
+            <li>
+              <strong>The function 1/&radic;x requires
+                special treatment.</strong>
+              As x approaches 0, the function grows
+              without bound.
+              Therefore, it is not Riemann integrable
+              in the ordinary sense for bounded functions.
+              However, its improper Riemann integral and
+              Lebesgue integral both equal 2.
+              In the numerical Lebesgue approximation,
+              we must limit the maximum value considered,
+              introducing an additional approximation error.
+              Increasing this limit helps reduce that error.
+            </li>
+
+          </ul>
+
+          <p>
+            <strong>Overall,</strong> the experiments show
+            that both approaches produce the same integral
+            when the function is Riemann integrable,
+            even though their numerical convergence
+            and computational costs may differ.
+            Lebesgue integration is also applicable
+            to certain functions that cannot be integrated
+            using the traditional Riemann definition.
+          </p>
+        </div>
+
+        <!-- NORMAL CDF -->
+        <div class="card">
+          <h3>Normal CDF Calculation</h3>
+
+          <p>
+            In the second exercise, we implemented and compared
+            three numerical methods for calculating the
+            cumulative distribution function of the standard
+            normal distribution. We evaluated their accuracy,
+            convergence and computational efficiency.
+          </p>
+
+          <ul class="steps">
+
+            <li>
+              <strong>Simpson's rule provides accurate results
+                and converges quickly.</strong>
+              This method divides the integration interval
+              into smaller parts and approximates the area
+              under the normal density curve using parabolas.
+              Increasing the number of subdivisions (N)
+              generally reduces the error.
+              For sufficiently smooth functions, Simpson's
+              rule has an error that decreases approximately
+              proportionally to 1/N⁴.
+              However, using more subdivisions also requires
+              more evaluations of the function, increasing
+              the computational cost.
+            </li>
+
+            <li>
+              <strong>The erf power series is effective
+                for values close to zero.</strong>
+              This method calculates the normal CDF
+              by approximating the error function (erf)
+              through a sequence of mathematical terms.
+              Adding more terms generally improves
+              the accuracy of the result.
+              Near zero, the series converges efficiently
+              and can provide very precise values.
+              However, for large absolute values of z,
+              numerical cancellation may reduce accuracy.
+              For this reason, our calculator uses
+              an alternative method when |z| exceeds 5.
+            </li>
+
+            <li>
+              <strong>The erf approximation is very fast,
+                but has limited precision.</strong>
+              Instead of computing an integral or summing
+              a large number of terms, this method uses
+              a predefined mathematical approximation
+              of the error function.
+              It requires only a small, fixed number
+              of calculations, making it computationally
+              efficient.
+              Although it provides accurate estimates
+              for many practical applications,
+              it generally cannot reach the same precision
+              as a sufficiently refined Simpson calculation
+              or a stable high-precision series evaluation.
+            </li>
+
+            <li>
+              <strong>Numerical stability is particularly
+                important for very small probabilities.</strong>
+              When z is far from zero, the normal CDF
+              approaches either 0 or 1.
+              In these situations, some formulas may lose
+              precision because they subtract numbers
+              that are almost equal.
+              Scientific libraries address this problem
+              using specialized algorithms that calculate
+              very small probabilities more reliably.
+              Our implementation also uses alternative
+              calculations for values far from zero
+              to improve numerical stability.
+            </li>
+
+          </ul>
+
+          <p>
+            <strong>Overall,</strong> all three methods
+            can be used to approximate the normal CDF,
+            but each has different advantages.
+            Simpson's rule offers high accuracy when
+            enough subdivisions are used, the power
+            series works particularly well near zero,
+            and the erf approximation provides fast
+            results with a small numerical error.
+            The most suitable method depends on the
+            required accuracy, the value of z and
+            the available computational resources.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="card" style="margin-top:18px">
+      <h3>Sources and further reading</h3>
+      <ol class="references">
+        <li><a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda3671.htm" target="_blank"
+            rel="noopener noreferrer">NIST / SEMATECH – Standard normal CDF table</a>.</li>
+        <li><a href="https://itl.nist.gov/div898/handbook/eda/section3/eda3661.htm" target="_blank"
+            rel="noopener noreferrer">NIST – Definition of the normal distribution</a>.</li>
+        <li><a href="https://math.stanford.edu/~conrad/papers/elemint.pdf" target="_blank"
+            rel="noopener noreferrer">Brian Conrad – Impossibility theorems for elementary integration (Liouville)</a>.
+        </li>
+        <li><a href="https://www.bdim.eu/item?id=RIUMI_2014_1_7_1_55_0" target="_blank"
+            rel="noopener noreferrer">Camillo De Lellis – Liouville’s theorem (in Italian)</a>.</li>
+        <li><a href="https://faculty.etsu.edu/gardnerr/4047/notes-Hogg-McKean-Craig/Hogg-McKean-Craig-3-4.pdf"
+            target="_blank" rel="noopener noreferrer">Course reading provided in the assignment</a>.</li>
+      </ol>
+    </div>
+    </section>
+  </main>
+  <footer>
+    <div class="wrap"></div>
+  </footer>
+  <script>
+    'use strict';
+    const $ = id => document.getElementById(id), PI = Math.PI, SQRT2 = Math.SQRT2;
+    const gcd = (a, b) => {while (b) {let r = a % b; a = b; b = r} return a};
+    const functions = {
+      square: {a: 0, b: 1, max: 1, exact: 1 / 3, fn: x => x * x, measure: t => t <= 0 ? 1 : t >= 1 ? 0 : 1 - Math.sqrt(t), note: 'Smooth continuous function: both methods converge to 1/3.'},
+      sin: {a: 0, b: PI, max: 1, exact: 2, fn: Math.sin, measure: t => t <= 0 ? PI : t >= 1 ? 0 : PI - 2 * Math.asin(t), note: 'The measure of {sin(x) ≥ t} on [0,π] is π−2arcsin(t). Both approaches converge to 2.'},
+      abs: {a: 0, b: 1, max: .5, exact: .25, fn: x => Math.abs(x - .5), measure: t => t <= 0 ? 1 : t >= .5 ? 0 : 1 - 2 * t, note: 'Continuous function with a corner; exact integral 1/4.'},
+      step: {a: 0, b: 1, max: 3, exact: 2, fn: x => x < .5 ? 1 : 3, measure: t => t <= 1 ? 1 : t <= 3 ? .5 : 0, note: 'Jump discontinuity at x=0.5. Both approximations converge to 2, but level-based convergence may fluctuate.'},
+      indicator: {a: 0, b: 1, max: 1, exact: .5, fn: x => x < .5 ? 1 : 0, measure: t => t > 0 && t <= 1 ? .5 : t <= 0 ? 1 : 0, note: 'Indicator of [0,0.5): exact integral 1/2.'},
+      singular: {a: 0, b: 1, max: Infinity, exact: 2, fn: x => 1 / Math.sqrt(x), measure: t => t <= 1 ? 1 : 1 / (t * t), note: 'Improper integral: ∫₀¹ x⁻¹ᐟ²dx = 2. The level integral is truncated at T; its exact truncation error is 1/T. Not Riemann integrable in the ordinary sense.'},
+      dirichlet: {a: 0, b: 1, max: 1, exact: 0, fn: x => 1, measure: t => t > 0 ? 0 : 1, note: 'Dirichlet: f=1 for rational x and f=0 for irrational x. Midpoint sampling only uses rational points, so it gives 1 for every N; it does NOT converge to the Lebesgue integral of 0.', pathological: true},
+      thomae: {a: 0, b: 1, max: 1, exact: 0, fn: (x, i, n) => {let p = 2 * i + 1, q = 2 * n; return gcd(p, q) / q}, measure: t => t > 0 ? 0 : 1, note: 'Thomae: f(p/q)=1/q in lowest terms and f=0 on irrationals. For rational midpoint samples p/(2N), the exact denominator is calculated. Both integrals equal 0.', pathological: true}
+    };
+    function riemann(f, n) {let dx = (f.b - f.a) / n, sum = 0; for (let i = 0; i < n; i++)sum += f.fn(f.a + (i + .5) * dx, i, n); return sum * dx}
+    function leb(f, m) {let T = Number.isFinite(f.max) ? f.max : Math.sqrt(m) * 4, step = T / m, sum = 0; for (let j = 0; j < m; j++)sum += f.measure((j + .5) * step); return sum * step}
+    function fmt(v, d = 9) {if (!Number.isFinite(v)) return '—'; if (v !== 0 && Math.abs(v) < 1e-5) return v.toExponential(3); return v.toFixed(d)}
+    function errFmt(v) {if (v === 0) return '0'; return v < 1e-5 ? v.toExponential(2) : v.toFixed(7)}
+    function bench(fn) {let reps = 1; while (reps < 4096) {let t = performance.now(); for (let k = 0; k < reps; k++)fn(); if (performance.now() - t > 12) break; reps *= 2} let t = performance.now(); for (let k = 0; k < reps; k++)fn(); return (performance.now() - t) / reps}
+    function run1(full = true) {
+      const f = functions[$('fn').value], n = 2 ** Number($('subdiv').value), m = 2 ** Number($('levels').value); $('ntext').textContent = n.toLocaleString('en-US'); $('mtext').textContent = m.toLocaleString('en-US'); let r = riemann(f, n), l = leb(f, m); $('exact').textContent = fmt(f.exact, 10); $('rval').textContent = fmt(r, 10); $('lval').textContent = fmt(l, 10); $('errors').textContent = errFmt(Math.abs(r - f.exact)) + ' / ' + errFmt(Math.abs(l - f.exact)); $('fnnote').textContent = f.note + (f === functions.singular ? ' For M=' + m + ', the maximum level is T=' + fmt(4 * Math.sqrt(m), 2) + '.' : ''); drawDiscretizations(f, n, m); $('changeNote').textContent = 'Current settings: N = ' + n + ' intervals on the x-axis; M = ' + m + ' bands on the y-axis. Errors: Riemann ' + errFmt(Math.abs(r - f.exact)) + '; Lebesgue ' + errFmt(Math.abs(l - f.exact)) + '. Some step functions and linear formulas give exact results with very few subdivisions; that is expected.'; if (!full) return;
+      const sizes = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192], rows = [];
+      for (const size of sizes) {let R = riemann(f, size), L = leb(f, size); rows.push({size, R, L, eR: Math.abs(R - f.exact), eL: Math.abs(L - f.exact), tR: bench(() => riemann(f, size)), tL: bench(() => leb(f, size))})}
+      $('table1').innerHTML = rows.map(v => `<tr><td>${v.size}</td><td>${fmt(v.R)}</td><td>${errFmt(v.eR)}</td><td>${fmt(v.tR, 6)}</td><td>${v.size}</td><td>${fmt(v.L)}</td><td>${errFmt(v.eL)}</td><td>${fmt(v.tL, 6)}</td></tr>`).join(''); drawFunction(f); plotLog($('convergenceGraph'), [{values: rows.map(p => [p.size, p.eR]), color: '#55d9e8'}, {values: rows.map(p => [p.size, p.eL]), color: '#b5a4ff'}], 'N / M', 'Error'); $('graphnote').textContent = f.pathological ? 'Conceptual illustration: finite sampling cannot show the density of rational and irrational numbers.' : f === functions.singular ? 'The singularity at x=0 is excluded to avoid infinite plotted values.' : 'Function sampled over its domain.'
+    }
+    function drawDiscretizations(f, n, m) {
+      const finite = Number.isFinite(f.max), limit = finite ? f.max : Math.min(4, 4 * Math.sqrt(m)), scaleY = Math.max(.1, limit * 1.08);
+      const draw = (id, type, count) => {
+        const g = basePlot($(id), f.a, f.b, 0, scaleY, 'x', 'f(x)'), {ctx, X, Y} = g;
+        // Display up to 48 divisions; above that, visually subsample only.
+        const shown = Math.min(count, 48);
+        if (type === 'r') {
+          const dx = (f.b - f.a) / shown;
+          for (let i = 0; i < shown; i++) {
+            let x = f.a + (i + .5) * dx, yy = Math.max(0, Math.min(scaleY, f.fn(x, i, shown)));
+            ctx.fillStyle = 'rgba(85,217,232,.17)'; ctx.fillRect(X(f.a + i * dx), Y(yy), X(f.a + (i + 1) * dx) - X(f.a + i * dx), Y(0) - Y(yy));
+            ctx.strokeStyle = 'rgba(85,217,232,.8)'; ctx.strokeRect(X(f.a + i * dx), Y(yy), X(f.a + (i + 1) * dx) - X(f.a + i * dx), Y(0) - Y(yy));
+          }
+        } else {
+          for (let j = 0; j < shown; j++) {
+            let y0 = limit * j / shown, y1 = limit * (j + 1) / shown;
+            ctx.fillStyle = j % 2 ? 'rgba(181,164,255,.12)' : 'rgba(181,164,255,.26)';
+            ctx.fillRect(X(f.a), Y(y1), X(f.b) - X(f.a), Y(y0) - Y(y1));
+            ctx.strokeStyle = 'rgba(181,164,255,.6)'; ctx.beginPath(); ctx.moveTo(X(f.a), Y(y1)); ctx.lineTo(X(f.b), Y(y1)); ctx.stroke();
+          }
+        }
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.2; ctx.beginPath(); let on = false;
+        for (let i = 0; i <= 500; i++) {
+          let x = f.a + (f.b - f.a) * i / 500; if (f === functions.singular && i === 0) continue;
+          let yy = f.pathological ? 0 : Math.min(scaleY, f.fn(x)); if (!Number.isFinite(yy)) continue;
+          if (!on) {ctx.moveTo(X(x), Y(yy)); on = true} else ctx.lineTo(X(x), Y(yy));
+        } ctx.stroke();
+      };
+      draw('riemannVisual', 'r', n); draw('lebesgueVisual', 'l', m);
+      $('visualNote').textContent = (n > 48 || m > 48 ? 'To keep the figure readable, above 48 subdivisions only 48 bands are shown; calculations still use N=' + n + ' e M=' + m + '. ' : '') + (f.pathological ? 'For pathological functions, the diagram is only schematic and does not capture the structure of rational numbers.' : f === functions.singular ? 'The band diagram is truncated because the function is unbounded.' : 'Both plots show the same function with two different partitioning approaches.');
+    }
+    function canvasSet(canvas) {const rect = canvas.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2); canvas.width = Math.max(300, Math.round(rect.width * dpr)); canvas.height = Math.round(rect.height * dpr); const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return {ctx, w: canvas.width / dpr, h: canvas.height / dpr}}
+    function basePlot(canvas, minX, maxX, minY, maxY, xlabel, ylabel) {const {ctx, w, h} = canvasSet(canvas), p = {l: 47, r: 19, t: 22, b: 39}, X = x => p.l + (x - minX) / (maxX - minX) * (w - p.l - p.r), Y = y => h - p.b - (y - minY) / (maxY - minY) * (h - p.t - p.b); ctx.clearRect(0, 0, w, h); ctx.font = '11px system-ui'; ctx.strokeStyle = '#304057'; ctx.fillStyle = '#90a8c1'; ctx.lineWidth = 1; for (let j = 0; j <= 4; j++) {let y = minY + (maxY - minY) * j / 4; ctx.beginPath(); ctx.moveTo(p.l, Y(y)); ctx.lineTo(w - p.r, Y(y)); ctx.stroke(); ctx.fillText(Number(y.toPrecision(2)).toString(), 4, Y(y) + 4)} for (let j = 0; j <= 4; j++) {let x = minX + (maxX - minX) * j / 4; ctx.beginPath(); ctx.moveTo(X(x), p.t); ctx.lineTo(X(x), h - p.b); ctx.stroke(); ctx.fillText(Number(x.toPrecision(2)).toString(), X(x) - 10, h - 18)} ctx.fillStyle = '#c3d5e9'; ctx.fillText(xlabel, w - 65, h - 3); ctx.fillText(ylabel, p.l + 3, 12); return {ctx, X, Y, w, h, p}}
+    function drawFunction(f) {let bound = f === functions.singular ? 4.5 : f.max === 3 ? 3.4 : f.max === 1 ? 1.15 : .58; let g = basePlot($('functionGraph'), f.a, f.b, 0, bound, 'x', 'f(x)'); let {ctx, X, Y} = g; ctx.strokeStyle = '#55d9e8'; ctx.lineWidth = 2.4; ctx.beginPath(); let samples = 600; for (let i = 0; i <= samples; i++) {let x = f.a + (f.b - f.a) * i / samples; if (f === functions.singular && i === 0) continue; let y = f.pathological ? 0 : f.fn(x); y = Math.min(bound, y); if (i === 0 || f === functions.singular && i === 1) ctx.moveTo(X(x), Y(y)); else ctx.lineTo(X(x), Y(y))} ctx.stroke(); if (f.pathological) {ctx.fillStyle = '#ffcb80'; ctx.font = '13px system-ui'; ctx.fillText('Cannot represent this graph using finite sampling', 52, 46)} }
+    function plotLog(canvas, series, xlabel, ylabel) {
+      // Simple chart: no logarithms or negative error coordinates.
+      const {ctx, w, h} = canvasSet(canvas);
+      const pad = {l: 77, r: 20, t: 28, b: 60};
+      const plotW = w - pad.l - pad.r, plotH = h - pad.t - pad.b;
+      const sizes = [...new Set(series.flatMap(s => s.values.map(p => p[0])))].sort((a, b) => a - b);
+      const maxError = Math.max(0, ...series.flatMap(s => s.values.map(p => Number.isFinite(p[1]) ? Math.max(0, p[1]) : 0)));
+      const top = maxError > 0 ? maxError * 1.15 : 1;
+      const X = x => pad.l + (sizes.indexOf(x) / Math.max(1, sizes.length - 1)) * plotW;
+      const Y = e => pad.t + plotH - (Math.max(0, e) / top) * plotH;
+      const formatError = v => {
+        if (v === 0) return '0';
+        if (v >= .01) return Number(v.toFixed(4)).toLocaleString('en-US', {maximumFractionDigits: 4});
+        if (v >= .000001) return Number(v.toPrecision(3)).toLocaleString('en-US', {maximumFractionDigits: 8});
+        return v.toExponential(1).replace('e-', ' × 10⁻').replace('e+', ' × 10^');
+      };
+      ctx.clearRect(0, 0, w, h); ctx.font = '11px system-ui';
+      ctx.fillStyle = '#c3d5e9'; ctx.fillText('Absolute error (never negative)', pad.l, 14);
+      for (let j = 0; j <= 4; j++) {
+        const v = top * j / 4, y = Y(v);
+        ctx.strokeStyle = '#304057'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+        ctx.fillStyle = '#a6b7cd'; ctx.textAlign = 'right'; ctx.fillText(formatError(v), pad.l - 8, y + 4);
+      }
+      const labelEvery = sizes.length > 7 ? 2 : 1;
+      sizes.forEach((n, i) => {
+        if (i % labelEvery !== 0 && i !== sizes.length - 1) return;
+        const x = X(n);
+        ctx.fillStyle = '#a6b7cd'; ctx.textAlign = 'center'; ctx.fillText(n.toLocaleString('en-US'), x, h - pad.b + 19);
+      });
+      ctx.fillStyle = '#c3d5e9'; ctx.textAlign = 'center'; ctx.fillText('Number of subdivisions (N or M)', pad.l + plotW / 2, h - 9);
+      ctx.textAlign = 'left';
+      for (const s of series) {
+        ctx.strokeStyle = s.color; ctx.lineWidth = 2.5; ctx.beginPath(); let begun = false;
+        for (const [n, e] of s.values) {if (!Number.isFinite(e)) continue; const x = X(n), y = Y(e); if (!begun) {ctx.moveTo(x, y); begun = true} else ctx.lineTo(x, y)}
+        ctx.stroke(); ctx.fillStyle = s.color;
+        for (const [n, e] of s.values) {if (!Number.isFinite(e)) continue; ctx.beginPath(); ctx.arc(X(n), Y(e), 3, 0, 2 * Math.PI); ctx.fill()}
+      }
+      if (maxError === 0) {ctx.textAlign = 'center'; ctx.fillStyle = '#72e8ba'; ctx.font = '13px system-ui'; ctx.fillText('Error = 0 for all displayed points', pad.l + plotW / 2, pad.t + plotH / 2 - 15); ctx.textAlign = 'left'}
+    }
+
+    const phi = x => Math.exp(-x * x / 2) / Math.sqrt(2 * PI);
+    function simpson(z, n) {
+      if (z === 0) return .5;
+      n = Math.max(2, 2 * Math.ceil(n / 2));
+      const a = Math.abs(z);
+      // In the tails, integrate the residual probability directly to avoid cancellation.
+      const tail = a > 4, lo = tail ? a : 0, hi = tail ? 12 : a, h = (hi - lo) / n;
+      let sum = phi(lo) + phi(hi);
+      for (let i = 1; i < n; i++)sum += (i % 2 ? 4 : 2) * phi(lo + i * h);
+      const area = sum * h / 3;
+      return tail ? (z < 0 ? area : 1 - area) : (z < 0 ? .5 - area : .5 + area);
+    }
+    function erfSeries(z, maxTerms = 200, eps = 1e-16) {
+      let u = z / SQRT2, term = u, sum = u;
+      for (let k = 0; k < maxTerms - 1; k++) {
+        term *= (-u * u) * (2 * k + 1) / ((k + 1) * (2 * k + 3)); sum += term;
+        if (Math.abs(term) < eps * Math.max(1, Math.abs(sum))) break;
+      }
+      // For |z|>5, cancellation hurts the alternating series; switch to tail integration.
+      if (Math.abs(z) > 5) return simpson(z, 1024);
+      return .5 + sum / Math.sqrt(PI);
+    }
+    function erfApprox(u) {let s = u < 0 ? -1 : 1, x = Math.abs(u), t = 1 / (1 + .3275911 * x); let poly = ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - .284496736) * t + .254829592) * t; return s * (1 - poly * Math.exp(-x * x))}
+    function cdfApprox(z) {return .5 * (1 + erfApprox(z / SQRT2))}
+    const anchor = new Map([[-3, .0013498980316300933], [-2, .02275013194817921], [-1, .15865525393145707], [0, .5], [1, .8413447460685429], [2, .9772498680518208], [3, .9986501019683699]]);
+    function reference(z) {return anchor.has(z) ? anchor.get(z) : simpson(z, 16384)}
+    function run2() {
+      let z = Number($('z').value); if (!Number.isFinite(z)) z = 1; z = Math.max(-8, Math.min(8, z)); $('z').value = z; const n = 2 ** Number($('precision').value); $('ptext').textContent = n; let ref = reference(z), s = simpson(z, n), sr = erfSeries(z), ap = cdfApprox(z); $('refCDF').textContent = fmt(ref, 10); $('simpsonCDF').textContent = fmt(s, 10); $('seriesCDF').textContent = fmt(sr, 10); $('approxCDF').textContent = fmt(ap, 10); $('cdfnote').textContent = `${Math.abs(z) > 5 ? 'For |z| > 5, the direct series loses accuracy and is replaced with stable tail integration (1024 intervals). ' : ''}Absolute errors relative to the reference: Simpson ${errFmt(Math.abs(s - ref))}; ERF series ${errFmt(Math.abs(sr - ref))}; ERF approximation ${errFmt(Math.abs(ap - ref))}. The calculated results are compared ${anchor.has(z) ? ' with a known reference value (consistent with the rounded NIST table)' : 'Simpson with 16,384 subintervals and direct tail integration (internal check)'}.`; const times = [bench(() => simpson(z, n)), bench(() => erfSeries(z)), bench(() => cdfApprox(z))]; $('cdfPerformance').innerHTML = [['Simpson', Math.abs(s - ref), times[0]], ['erf series', Math.abs(sr - ref), times[1]], ['erf approximation', Math.abs(ap - ref), times[2]]].map(([name, error, time]) => `<tr><td>${name}</td><td>${errFmt(error)}</td><td>${fmt(time, 6)}</td></tr>`).join('');
+      const zlist = [-3, -2, -1, 0, 1, 2, 3], rows = zlist.map(x => {let r = reference(x), a = simpson(x, n), b = erfSeries(x), c = cdfApprox(x); return [x, r, a, Math.abs(a - r), b, Math.abs(b - r), c, Math.abs(c - r)]}); $('table2').innerHTML = rows.map(row => '<tr>' + row.map((v, i) => '<td>' + (i === 0 ? v : fmt(v, 10)) + '</td>').join('') + '</tr>').join(''); drawNormal(z); let xSizes = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096], sp = xSizes.map(k => [k, Math.abs(simpson(z, k) - ref)]), ser = xSizes.map(k => [k, Math.abs(erfSeries(z, k) - ref)]); plotLog($('cdfErrorGraph'), [{values: sp, color: '#55d9e8'}, {values: ser, color: '#b5a4ff'}], 'N', 'Error');
+    }
+    function drawNormal(z) {let g = basePlot($('normalGraph'), -4.5, 4.5, 0, .45, 'z', 'density'), {ctx, X, Y} = g; ctx.fillStyle = '#225c75'; ctx.beginPath(); ctx.moveTo(X(-4.5), Y(0)); for (let i = 0; i <= 700; i++) {let x = -4.5 + 9 * i / 700; if (x > z) break; ctx.lineTo(X(x), Y(phi(x)))} if (z > -4.5 && z < 4.5) ctx.lineTo(X(z), Y(phi(z))); ctx.lineTo(X(Math.min(z, 4.5)), Y(0)); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#55d9e8'; ctx.lineWidth = 2.7; ctx.beginPath(); for (let i = 0; i <= 700; i++) {let x = -4.5 + 9 * i / 700; if (!i) ctx.moveTo(X(x), Y(phi(x))); else ctx.lineTo(X(x), Y(phi(x)))} ctx.stroke(); if (z >= -4.5 && z <= 4.5) {ctx.strokeStyle = '#ffcb80'; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(X(z), Y(0)); ctx.lineTo(X(z), Y(phi(z))); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = '#ffcb80'; ctx.fillText('z = ' + z.toString(), Math.min(g.w - 68, X(z) + 6), Math.max(25, Y(phi(z)) - 8))} }
+    $('subdiv').addEventListener('input', () => run1(false)); $('levels').addEventListener('input', () => run1(false)); $('subdiv').addEventListener('change', () => run1(true)); $('levels').addEventListener('change', () => run1(true)); $('precision').addEventListener('input', () => run2()); $('run1').addEventListener('click', run1); $('fn').addEventListener('change', run1); $('run2').addEventListener('click', run2); $('z').addEventListener('input', run2); window.addEventListener('resize', () => {drawDiscretizations(functions[$('fn').value], 2 ** Number($('subdiv').value), 2 ** Number($('levels').value)); drawFunction(functions[$('fn').value]); let f = functions[$('fn').value], sizes = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]; plotLog($('convergenceGraph'), [{values: sizes.map(n => [n, Math.abs(riemann(f, n) - f.exact)]), color: '#55d9e8'}, {values: sizes.map(n => [n, Math.abs(leb(f, n) - f.exact)]), color: '#b5a4ff'}], 'N / M', 'Error'); drawNormal(Number($('z').value)); let z = Number($('z').value), ref = reference(z); plotLog($('cdfErrorGraph'), [{values: sizes.map(n => [n, Math.abs(simpson(z, n) - ref)]), color: '#55d9e8'}, {values: sizes.map(n => [n, Math.abs(erfSeries(z, n) - ref)]), color: '#b5a4ff'}], 'N', 'Error')}); run1(); run2();
+  </script>
+</body>
+
+</html>
