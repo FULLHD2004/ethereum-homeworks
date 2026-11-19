@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Contingency Tables and the Chi-Square Test of Independence</title>
+    <style>
+        :root {
+            --bg: #f5f7fc;
+            --ink: #15223a;
+            --muted: #5d6b83;
+            --line: #dfe5ef;
+            --blue: #2759d8;
+            --teal: #087f74;
+            --card: #fff;
+            --soft: #f1f5fc;
+            --code: #111c34;
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            color-scheme: light
+        }
+
+        @media(prefers-color-scheme:dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #0e1424;
+                --ink: #e6ecfa;
+                --muted: #9aa8c4;
+                --line: #27314b;
+                --blue: #7ba2ff;
+                --teal: #4fd1be;
+                --card: #151d33;
+                --soft: #1b2540;
+                --code: #0a1020;
+                color-scheme: dark
+            }
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 16px/1.65 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif
+        }
+
+        .wrap {
+            max-width: 1000px;
+            margin: auto;
+            padding: 0 20px
+        }
+
+        .hero {
+            background: linear-gradient(120deg, #101b36, #1d3d82);
+            color: #fff;
+            padding: 52px 0 44px
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.1rem);
+            line-height: 1.15;
+            margin: 10px 0
+        }
+
+        .hero p {
+            color: #d9e5ff;
+            max-width: 720px
+        }
+
+        .eyebrow {
+            font-size: .78rem;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #a6d9ff
+        }
+
+        nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 22px
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid #ffffff66;
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: .88rem
+        }
+
+        section {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: clamp(20px, 4vw, 34px);
+            margin: 20px 0
+        }
+
+        h2 {
+            font-size: 1.55rem;
+            line-height: 1.25;
+            margin: 0 0 12px
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin: 24px 0 6px
+        }
+
+        .tag {
+            display: inline-block;
+            color: var(--blue);
+            background: var(--soft);
+            border-radius: 30px;
+            font-size: .75rem;
+            font-weight: 800;
+            padding: 4px 11px;
+            margin-bottom: 10px
+        }
+
+        .math {
+            overflow-x: auto;
+            background: var(--soft);
+            border-left: 4px solid var(--blue);
+            padding: 13px 16px;
+            margin: 14px 0;
+            border-radius: 0 10px 10px 0;
+            font: 1.12rem Georgia, serif;
+            white-space: nowrap
+        }
+
+        .box {
+            padding: 15px 19px;
+            background: var(--soft);
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--teal);
+            border-radius: 12px;
+            margin: 16px 0
+        }
+
+        .box b:first-child {
+            color: var(--teal)
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 14px 0
+        }
+
+        .stat {
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--soft)
+        }
+
+        .stat small {
+            color: var(--muted);
+            display: block
+        }
+
+        .stat b {
+            font-size: 1.6rem
+        }
+
+        .tw {
+            overflow-x: auto
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+            font-variant-numeric: tabular-nums
+        }
+
+        th,
+        td {
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--line);
+            text-align: right
+        }
+
+        th:first-child,
+        td:first-child {
+            text-align: left
+        }
+
+        th {
+            background: var(--soft);
+            font-size: .86rem
+        }
+
+        tr.tot td {
+            font-weight: 700;
+            background: var(--soft)
+        }
+
+        td input {
+            width: 76px;
+            padding: 6px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--card);
+            color: var(--ink);
+            font: inherit;
+            text-align: right
+        }
+
+        button {
+            font: inherit;
+            font-weight: 700;
+            border: 0;
+            border-radius: 10px;
+            background: var(--blue);
+            color: #fff;
+            padding: 10px 20px;
+            cursor: pointer
+        }
+
+        @media(prefers-color-scheme:dark) {
+            button {
+                color: #0e1424
+            }
+        }
+
+        pre {
+            background: var(--code);
+            color: #e4eaf7;
+            border-radius: 12px;
+            padding: 16px;
+            overflow-x: auto;
+            font-size: .87rem;
+            line-height: 1.65
+        }
+
+        code {
+            font-family: ui-monospace, Consolas, monospace
+        }
+
+        p code,
+        li code {
+            background: var(--soft);
+            color: var(--blue);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: .9em
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .err {
+            color: #c0303d;
+            font-weight: 650;
+            min-height: 1.3em
+        }
+
+        @media(max-width:640px) {
+            .grid {
+                grid-template-columns: 1fr
+            }
+
+            .wrap {
+                padding: 0 14px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="hero">
+        <div class="wrap">
+            <div class="eyebrow">Statistics · Homework</div>
+            <h1>Contingency Tables and the Chi-Square Test of Independence</h1>
+            <p>How to tell whether two characteristics of a dataset are related: building the table, marginal and
+                conditional frequencies, expected frequencies, the χ² statistic, the p-value, and how to interpret the
+                result.</p>
+            <nav><a href="#idea">1. The idea</a><a href="#tabella">2. Table</a><a href="#teoria">3. Independence</a><a
+                    href="#chi">4. Chi-square</a><a href="#python">5. Python</a><a href="#conclusioni">6.
+                    Conclusions</a></nav>
+        </div>
+    </header>
+    <main class="wrap">
+
+        <section id="idea"><span class="tag">PART 1</span>
+            <h2>The starting idea</h2>
+            <p>We have a <strong>bivariate dataset</strong>: for each person or object observed, we record
+                two characteristics. We call them <i>X</i> and <i>F</i>. They are qualitative
+                variables (categories), such as "sport practised" or "sleep quality".</p>
+            <p>The question is:does knowing the value of X tell us anything about F? If people who
+                exercise regularly sleep better, the two variables seem "linked". If sleep quality is distributed in the
+                same way in every group, they are "independent".</p>
+            <p>Our example: 230 people, with</p>
+            <ul>
+                <li><i>X</i> = sport practised: None, Occasional, Regular (3 categories);</li>
+                <li><i>F</i> = sleep quality: Poor, Good (2 categories).</li>
+            </ul>
+            <p>The method has four steps: (1) count the observations in a table, (2) compute what we would expect if the
+                variables were independent, (3) measure the distance between observed and expected with the
+                χ² statistic, (4) decide whether this distance is too large to be just "luck".</p>
+        </section>
+
+        <section id="tabella"><span class="tag">PART 2</span>
+            <h2>Contingency table, marginal and conditional frequencies</h2>
+            <p>The contingency table counts, for every pair (category of X, category of F), how many
+                observations there are. Each number <i>n</i><sub>ij</sub> is a joint absolute frequency (row
+                <i>i</i>, column <i>j</i>). You can edit the numbers below: everything else on the page recalculates.
+            </p>
+            <div class="tw">
+                <table id="inp">
+                    <thead>
+                        <tr>
+                            <th>X \ F</th>
+                            <th>Poor</th>
+                            <th>Good</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <button id="run" type="button">Recalculate</button>
+            <div class="err" id="err" role="alert"></div>
+
+            <h3>Table with totals (marginal frequencies)</h3>
+            <p>The <strong>marginal frequencies</strong> are the totals on the "edge" of the table: summing the rows
+                gives how many observations fall in each category of X (<i>n</i><sub>i·</sub>), summing the columns
+                gives the same for F (<i>n</i><sub>·j</sub>). The grand total is <i>n</i>. Dividing by <i>n</i> gives
+                the <em>relative marginal frequencies</em>.</p>
+            <div class="tw" id="marg"></div>
+
+            <h3>Conditional frequencies</h3>
+            <p>Here we "condition": we ask <em>"among those with X = i, what fraction has F = j?"</em>. Each cell is
+                divided by the total of its row:</p>
+            <div class="math">f(F=j | X=i) = n<sub>ij</sub> / n<sub>i·</sub></div>
+            <div class="tw" id="cond"></div>
+            <p class="muted">Each row sums to 100%. If all rows were equal to each other (and to the "Total" row), the
+                variables would be independent. Here the rows are quite different: people who do no sport have more poor
+                sleep, people who exercise regularly have more good sleep.</p>
+        </section>
+
+        <section id="teoria"><span class="tag">PART 3</span>
+            <h2>Independence: in probability and in statistics</h2>
+            <h3>In probability</h3>
+            <p>Two events <i>A</i> and <i>B</i> are <strong>independent</strong> if knowing that one has occurred does
+                not change the probability of the other:</p>
+            <div class="math">P(A | B) = P(A) &nbsp; ⟺ &nbsp; P(A ∩ B) = P(A) · P(B)</div>
+            <p>Example: tossing two coins. The first outcome does not influence the second, so P(heads, heads) = ½ · ½ =
+                ¼.</p>
+            <p>For categorical variables, X and F are independent if the rule holds for <em>every</em> pair of
+                categories: <i>P</i>(X=i, F=j) = <i>P</i>(X=i) · <i>P</i>(F=j).</p>
+            <h3>In statistics (on data)</h3>
+            <p>In data we do not know the true probabilities, but we can estimate them with relative frequencies:
+                <i>P</i>(X=i) ≈ <i>n</i><sub>i·</sub>/<i>n</i> and <i>P</i>(F=j) ≈ <i>n</i><sub>·j</sub>/<i>n</i>. If
+                independence held, the expected joint frequency would be the product of the marginals:</p>
+            <div class="math">expected n<sub>ij</sub> = n · (n<sub>i·</sub>/n) · (n<sub>·j</sub>/n) = n<sub>i·</sub> ·
+                n<sub>·j</sub> / n</div>
+            <div class="box"><b>Practical translation.</b> "Independence" means the observed table looks like a table
+                with the same row and column totals, but where the values are spread "without preferences", exactly in
+                proportion to the totals.</div>
+            <h3>Expected frequencies in our example</h3>
+            <p>For "None / Poor": 70 · 90 / 230 ≈ 27.39. It means: if sport had nothing to do with sleep, we would
+                expect about 27 people in that cell (we observed 40).</p>
+            <div class="tw" id="exp"></div>
+        </section>
+
+        <section id="chi"><span class="tag">PART 4</span>
+            <h2>The Chi-square (χ²) statistic and the p-value</h2>
+            <p>Now we compare observed (<i>O</i>) and expected (<i>E</i>) in every cell. Large differences = a sign of
+                dependence. So that positive and negative differences do not cancel out, we square them, and we divide
+                by <i>E</i> to "weight" them (being off by 10 on 20 expected is more serious than on 1000):</p>
+            <div class="math">χ² = ∑<sub>i,j</sub> (O<sub>ij</sub> − E<sub>ij</sub>)² / E<sub>ij</sub></div>
+            <div class="tw" id="contrib"></div>
+            <h3>Degrees of freedom</h3>
+            <p>With <i>r</i> rows and <i>c</i> columns, once the marginal totals are fixed only some cells are "free" to
+                vary. The degrees of freedom are:</p>
+            <div class="math">df = (r − 1)(c − 1)</div>
+            <h3>Results</h3>
+            <div class="grid">
+                <div class="stat"><small>χ² statistic</small><b id="rchi">—</b></div>
+                <div class="stat"><small>Degrees of freedom</small><b id="rdf">—</b></div>
+                <div class="stat"><small>p-value (optional)</small><b id="rp">—</b></div>
+            </div>
+            <h3>What is the p-value?</h3>
+            <p>If X and F were truly independent, χ² would approximately follow a <strong>chi-square distribution with
+                    df degrees of freedom</strong>. The <strong>p-value</strong> is the probability of obtaining a χ²
+                <em>at least as large as the observed one</em> "by pure chance", <em>assuming independence is true</em>.
+            </p>
+            <ul>
+                <li><strong>H<sub>0</sub></strong> (null hypothesis): X and F are independent.</li>
+                <li><strong>H<sub>1</sub></strong>: X and F are associated (dependent).</li>
+                <li>Rule: if p &lt; α (usually α = 0.05) we <strong>reject H<sub>0</sub></strong>; otherwise we lack
+                    sufficient evidence to reject it.</li>
+            </ul>
+            <div class="box" id="verdict"><b>Verdict.</b> —</div>
+            <p class="muted">Validity condition: the test works well if the expected frequencies are large enough (rule
+                of thumb: all ≥ 5). Here they are.</p>
+            <h3>How strong is the link? (Cramér's V)</h3>
+            <p>χ² grows with <i>n</i>, so on its own it does not say "how much" the variables are associated. Cramér's
+                index is used, between 0 (no association) and 1 (perfect association):</p>
+            <div class="math">V = √( χ² / (n · min(r−1, c−1)) )</div>
+            <div class="stat" style="max-width:240px"><small>Cramér's V</small><b id="rv">—</b></div>
+        </section>
+
+        <section id="python"><span class="tag">PART 5</span>
+            <h2>Implementation in Python</h2>
+            <p>The code starts from a "raw" dataset (a list of pairs <i>(x, f)</i>), builds the table and computes
+                everything with the standard library only. The p-value needs <code>scipy</code> (optional).</p>
+            <pre><code>from collections import Counter
+
+# Raw dataset: one (x, f) pair for each observation
+counts = {("None","Poor"):40, ("None","Good"):30,
+          ("Occasional","Poor"):30, ("Occasional","Good"):50,
+          ("Regular","Poor"):20, ("Regular","Good"):60}
+data = [pair for pair, k in counts.items() for _ in range(k)]
+
+# 1) Contingency table and marginals
+table = Counter(data)
+X = sorted({x for x, _ in data}); F = sorted({f for _, f in data})
+n = len(data)
+row = {x: sum(table[(x, f)] for f in F) for x in X}   # n_i.
+col = {f: sum(table[(x, f)] for x in X) for f in F}   # n_.j
+
+# 2) Conditional frequencies  f(F=j | X=i)
+cond = {(x, f): table[(x, f)] / row[x] for x in X for f in F}
+
+# 3) Expected frequencies under independence
+exp = {(x, f): row[x] * col[f] / n for x in X for f in F}
+
+# 4) Chi-square and degrees of freedom
+chi2 = sum((table[k] - exp[k])**2 / exp[k] for k in exp)
+df = (len(X) - 1) * (len(F) - 1)
+
+print(f"chi2 = {chi2:.3f}, df = {df}")   # chi2 = 16.331, df = 2
+
+# 5) OPTIONAL: p-value
+from scipy.stats import chi2 as chi2_dist
+print("p-value =", chi2_dist.sf(chi2, df))   # about 0.00028</code></pre>
+            <p class="muted">Cross-check: <code>scipy.stats.chi2_contingency(matrix)</code> directly returns χ²,
+                p-value, df and the expected table (for tables larger than 2×2 the continuity correction has no effect).
+            </p>
+        </section>
+
+        <section id="conclusioni"><span class="tag">PART 6</span>
+            <h2>Interpretation and conclusions</h2>
+            <p>With the starting data we get χ² ≈ 16.33 with df = 2 and p ≈ 0.0003, far below 0.05. So we <strong>reject
+                    independence</strong>: sport and sleep quality turn out to be <strong>statistically dependent
+                    (associated)</strong>. The cells contributing most are "None/Poor" (more cases than expected) and
+                "Regular/Poor" (fewer cases than expected). Cramér's V ≈ 0.27 indicates a <strong>moderate</strong>
+                association, not a very strong one.</p>
+            <h3>Association is not causation</h3>
+            <p>The test only says that the variables <em>go together</em> more than chance would explain. It does not
+                say <em>why</em>. Possible explanations besides "sport improves sleep":</p>
+            <ul>
+                <li><strong>Reverse causation</strong>: people who sleep well have more energy to exercise.</li>
+                <li><strong>Confounding variable</strong>: for example stress, age or job could influence both sport and
+                    sleep.</li>
+                <li><strong>Sample selection</strong>: if the data come from a particular group, the link may not hold
+                    in general.</li>
+            </ul>
+            <p>To establish a causal link we need <strong>controlled experiments</strong> (random assignment to groups)
+                or causal inference methods, not the χ² test alone.</p>
+            <div class="box"><b>Final conclusion.</b> We built the contingency table, computed marginal and conditional
+                frequencies, obtained the expected frequencies under independence and measured the deviation with χ². A
+                large χ² (small p-value) means the data are poorly compatible with independence: there is
+                <em>statistical association</em>. This does not, however, prove that one variable is the <em>cause</em>
+                of the other.</div>
+            <p class="muted">If you edit the numbers in the Part 2 table (for example making the rows almost equal), you
+                will see χ² drop and the p-value rise: the verdict above will change accordingly. The text in this
+                section refers to the initial data.</p>
+        </section>
+    </main>
+    <script>
+        (function () {
+            const R = ["None", "Occasional", "Regular"], C = ["Poor", "Good"];
+            const init = [[40, 30], [30, 50], [20, 60]];
+            const $ = id => document.getElementById(id);
+            const tb = $("inp").querySelector("tbody");
+            R.forEach((r, i) => {const tr = document.createElement("tr"); tr.innerHTML = "<td>" + r + "</td>" + C.map((c, j) => '<td><input type="number" min="0" step="1" id="c' + i + j + '" value="' + init[i][j] + '"></td>').join(""); tb.appendChild(tr)});
+            function lg(x) {const g = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.001208650973866179, -0.000005395239384953]; let y = x, t = x + 5.5; t -= (x + .5) * Math.log(t); let s = 1.000000000190015; for (const c of g) s += c / ++y; return -t + Math.log(2.5066282746310005 * s / x)}
+            function Q(a, x) {
+                if (x <= 0) return 1; if (x < a + 1) {let ap = a, s = 1 / a, d = s; for (let n = 0; n < 500; n++) {ap++; d *= x / ap; s += d; if (Math.abs(d) < Math.abs(s) * 1e-14) break} return 1 - s * Math.exp(-x + a * Math.log(x) - lg(a))}
+                let b = x + 1 - a, c = 1e300, d = 1 / b, h = d; for (let i = 1; i < 500; i++) {const an = -i * (i - a); b += 2; d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300; c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-14) break} return Math.exp(-x + a * Math.log(x) - lg(a)) * h
+            }
+            const f = (v, k = 2) => v.toFixed(k);
+            const head = (first) => "<table><thead><tr><th>" + first + "</th>" + C.map(c => "<th>" + c + "</th>").join("") + "<th>Total</th></tr></thead><tbody>";
+            function run() {
+                const O = R.map((_, i) => C.map((_, j) => Number($("c" + i + j).value)));
+                if (O.some(r => r.some(v => !Number.isFinite(v) || v < 0 || !Number.isInteger(v)))) {$("err").textContent = "Enter whole numbers ≥ 0 only."; return }
+                const rs = O.map(r => r[0] + r[1]), cs = C.map((_, j) => O.reduce((a, r) => a + r[j], 0)), n = rs.reduce((a, b) => a + b, 0);
+                if (rs.some(v => v === 0) || cs.some(v => v === 0)) {$("err").textContent = "Every row and every column must contain at least one observation."; return }
+                $("err").textContent = "";
+                let h = head("X \\ F"); R.forEach((r, i) => h += "<tr><td>" + r + "</td>" + O[i].map(v => "<td>" + v + "</td>").join("") + "<td><b>" + rs[i] + "</b></td></tr>");
+                h += '<tr class="tot"><td>Total</td>' + cs.map(v => "<td>" + v + "</td>").join("") + "<td>" + n + "</td></tr>";
+                h += '<tr class="tot"><td>Relative marginal</td>' + cs.map(v => "<td>" + f(100 * v / n, 1) + "%</td>").join("") + "<td>100%</td></tr></tbody></table>";
+                h += '<p class="muted">Row relative marginals: ' + R.map((r, i) => r + " " + f(100 * rs[i] / n, 1) + "%").join(" · ") + ".</p>";
+                $("marg").innerHTML = h;
+                let c2 = head("X"); R.forEach((r, i) => c2 += "<tr><td>" + r + "</td>" + O[i].map(v => "<td>" + f(100 * v / rs[i], 1) + "%</td>").join("") + "<td>100%</td></tr>");
+                c2 += '<tr class="tot"><td>Total</td>' + cs.map(v => "<td>" + f(100 * v / n, 1) + "%</td>").join("") + "<td>100%</td></tr></tbody></table>";
+                $("cond").innerHTML = c2;
+                const E = rs.map(r => cs.map(c => r * c / n));
+                let e2 = head("X"); R.forEach((r, i) => e2 += "<tr><td>" + r + "</td>" + E[i].map(v => "<td>" + f(v) + "</td>").join("") + "<td>" + rs[i] + "</td></tr>");
+                e2 += '<tr class="tot"><td>Total</td>' + cs.map(v => "<td>" + v + "</td>").join("") + "<td>" + n + "</td></tr></tbody></table>";
+                $("exp").innerHTML = e2;
+                let chi = 0; const K = O.map((r, i) => r.map((o, j) => {const k = (o - E[i][j]) ** 2 / E[i][j]; chi += k; return k}));
+                let k2 = "<table><thead><tr><th>(O − E)² / E</th>" + C.map(c => "<th>" + c + "</th>").join("") + "</tr></thead><tbody>";
+                R.forEach((r, i) => k2 += "<tr><td>" + r + "</td>" + K[i].map(v => "<td>" + f(v, 3) + "</td>").join("") + "</tr>");
+                k2 += '<tr class="tot"><td>Sum = χ²</td><td colspan="2">' + f(chi, 3) + "</td></tr></tbody></table>";
+                $("contrib").innerHTML = k2;
+                const df = (R.length - 1) * (C.length - 1), p = Q(df / 2, chi / 2), V = Math.sqrt(chi / (n * Math.min(R.length - 1, C.length - 1)));
+                $("rchi").textContent = f(chi, 3); $("rdf").textContent = df; $("rp").textContent = p < 0.0001 ? "< 0.0001" : f(p, 4); $("rv").textContent = f(V, 3);
+                const minE = Math.min(...E.flat());
+                $("verdict").innerHTML = "<b>Verdict (α = 0.05).</b> " + (p < 0.05 ? "p ≈ " + (p < 0.0001 ? "< 0.0001" : f(p, 4)) + " is smaller than 0.05: <strong>H<sub>0</sub> is rejected</strong>. The data are poorly compatible with independence, so X and F appear <strong>associated</strong> (but this does not prove a cause-and-effect relationship)." : "p ≈ " + f(p, 4) + " is not smaller than 0.05: <strong>H<sub>0</sub> is not rejected</strong>. There is not enough evidence of association; the observed differences are compatible with chance. (This does not mean independence has been proven.)") + (minE < 5 ? " <em>Warning: some expected frequencies are below 5, so the test is less reliable.</em>" : "");
+            }
+            $("run").addEventListener("click", run); run();
+        })();
+    </script>
+</body>
+
+</html>
