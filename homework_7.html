@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modes of Convergence and Bayesian Inference</title>
+    <style>
+        :root {
+            --bg: #0a1020;
+            --panel: #121d32;
+            --line: #2c3a51;
+            --text: #eaf2ff;
+            --muted: #a8b8cf;
+            --blue: #75b7ff;
+            --mint: #60e0bd;
+            --pink: #ff9db8;
+            --yellow: #ffc978;
+            --max: 1100px
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(ellipse at top right, #182c50 0%, var(--bg) 45%);
+            font: 15px/1.7 system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+            color: var(--text)
+        }
+
+        .wrap {
+            max-width: var(--max);
+            margin: auto;
+            padding: 24px
+        }
+
+        header {
+            padding: 46px 0 20px
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .17em;
+            text-transform: uppercase;
+            color: var(--mint)
+        }
+
+        h1 {
+            font-size: clamp(30px, 4.2vw, 50px);
+            letter-spacing: -.04em;
+            line-height: 1.1;
+            margin: 12px 0 18px;
+            max-width: 850px
+        }
+
+        h2 {
+            font-size: 25px;
+            letter-spacing: -.02em;
+            margin: 0 0 12px
+        }
+
+        h3 {
+            font-size: 18px;
+            margin: 18px 0 8px;
+            color: var(--blue)
+        }
+
+        p,
+        li {
+            color: var(--muted)
+        }
+
+        p {
+            margin: 9px 0 14px
+        }
+
+        strong {
+            color: var(--text)
+        }
+
+        .lead {
+            font-size: 17px;
+            max-width: 850px
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 5px 11px;
+            border: 1px solid #42678a;
+            border-radius: 40px;
+            color: #b6d7ff;
+            font-size: 12px;
+            margin: 0 6px 6px 0
+        }
+
+        .panel {
+            background: linear-gradient(145deg, var(--panel), #10192c);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 23px;
+            margin: 18px 0
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px
+        }
+
+        .card {
+            background: #17243b;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px
+        }
+
+        .card h3 {
+            margin-top: 0
+        }
+
+        .tag {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--mint)
+        }
+
+        .eq {
+            background: #0b1426;
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--mint);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin: 12px 0;
+            color: var(--text);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 17px;
+            overflow-x: auto
+        }
+
+        .key {
+            border-left: 3px solid var(--yellow);
+            background: #1a2234;
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin: 14px 0
+        }
+
+        .key p {
+            margin: 4px 0;
+            color: #e9dcc2
+        }
+
+        .tw {
+            overflow-x: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 560px
+        }
+
+        th,
+        td {
+            padding: 9px 11px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+            color: var(--muted)
+        }
+
+        th {
+            color: var(--text);
+            background: #17243b
+        }
+
+        td:first-child {
+            color: var(--text);
+            font-weight: 700
+        }
+
+        nav a {
+            color: var(--blue);
+            text-decoration: none;
+            margin-right: 16px
+        }
+
+        .pink {
+            color: var(--pink)
+        }
+
+        .mint {
+            color: var(--mint)
+        }
+
+        .yellow {
+            color: var(--yellow)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <header>
+            <div class="eyebrow">Probability &amp; Statistics · Homework</div>
+            <h1>Modes of Convergence and Bayesian Inference</h1>
+            <p class="lead">A simple, step-by-step explanation of how random quantities "settle down" as data grows
+                (LLN, CLT), why √n appears everywhere, and how Bayes' Theorem lets us update beliefs with data.</p>
+            <span class="pill">Convergence</span><span class="pill">LLN</span><span class="pill">CLT</span><span
+                class="pill">√n</span><span class="pill">Bayes</span>
+            <nav style="margin-top:12px"><a href="#p1">Part 1 · Convergence</a><a href="#p2">Part 2 · Bayes</a></nav>
+        </header>
+
+        <section id="p1" class="panel">
+            <h2>Part 1 — Modes of Convergence</h2>
+            <p>Let X₁, X₂, … be random variables (for example, the average of the first n observations). Unlike numbers,
+                random variables can "approach" a limit X in several different ways. Each way answers a different
+                question, and each is used for a different theorem.</p>
+
+            <div class="key">
+                <p><strong>One example for all four:</strong> an archer shoots arrows one after another. Xₙ is where the
+                    n-th arrow
+                    lands, X is the bullseye. The archer improves with practice, so we ask: <em>in what sense does Xₙ
+                        get closer to
+                        X?</em> Each mode below answers with a different kind of "closer".</p>
+            </div>
+
+            <div class="grid">
+                <div class="card"><span class="tag">LOOK AT ONE SHOT AT A TIME</span>
+                    <h3>1. In probability (→ᴾ)</h3>
+                    <div class="eq">P(|Xₙ − X| &gt; ε) → 0</div>
+                    <p><strong>In plain words:</strong> pick a large n and a tolerance ε (say 1 cm). The chance that
+                        arrow n misses
+                        by more than ε is very small, and it gets smaller as n grows.</p>
+                    <p><strong>What it does NOT say:</strong> the archer may still make a bad miss now and then, even
+                        much later. It
+                        only says such misses become rarer and rarer.</p>
+                </div>
+
+                <div class="card"><span class="tag">LOOK AT THE WHOLE HISTORY</span>
+                    <h3>2. Almost surely (→ᵃˢ)</h3>
+                    <div class="eq">P( Xₙ → X as n → ∞ ) = 1</div>
+                    <p><strong>In plain words:</strong> follow one archer through all his shots. With probability 1
+                        there is a
+                        moment N after which <em>every</em> arrow lands within ε of the bullseye, forever.</p>
+                    <p><strong>Difference from 1:</strong> here bad misses happen only a finite number of times. That is
+                        why it is
+                        stronger: it controls the entire sequence, not each n separately.</p>
+                </div>
+
+                <div class="card"><span class="tag">LOOK AT THE AVERAGE PENALTY</span>
+                    <h3>3. Mean-square (L²)</h3>
+                    <div class="eq">E[(Xₙ − X)²] → 0</div>
+                    <p><strong>In plain words:</strong> for each arrow, square the distance from the bullseye (so big
+                        misses count a
+                        lot), then average over all possible archers or repetitions. This average penalty goes to 0.</p>
+                    <p><strong>Why useful:</strong> it is easy to compute (it equals variance + bias²). Example: for a
+                        sample mean,
+                        E[(X̄ₙ − μ)²] = σ²/n → 0.</p>
+                </div>
+
+                <div class="card"><span class="tag">LOOK ONLY AT THE PATTERN</span>
+                    <h3>4. In distribution (→ᵈ)</h3>
+                    <div class="eq">Fₙ(x) → F(x)</div>
+                    <p><strong>In plain words:</strong> forget the bullseye. Look at the cloud of many arrows' landing
+                        points: its
+                        <em>shape</em> (histogram) gets closer and closer to a given shape F, for example a bell curve.
+                    </p>
+                    <p><strong>What it does NOT say:</strong> that Xₙ is close to any particular value. Two independent
+                        fair coins
+                        have the same distribution but are different random variables.</p>
+                </div>
+            </div>
+            <h3>How they relate</h3>
+            <div class="eq">
+                Almost surely (2) ⇒ In probability (1) ⇒ In distribution (4)
+                <br>
+                Mean-square L² (3) ⇒ In probability (1)
+            </div>
+            <p>The arrow <strong>⇒</strong> means "implies": if the mode on the left holds, the one on the right holds
+                too.
+                The numbers refer to the four cards above. </p>
+            <p>The reverse implications are false in general. Two useful exceptions: if the limit is a
+                <strong>constant</strong>, convergence in distribution implies convergence in probability; and L² and
+                a.s. convergence do not imply each other (but neither is stronger in the other direction without extra
+                conditions).
+            </p>
+            <div class="tw">
+                <table>
+                    <tr>
+                        <th>Mode</th>
+                        <th>Strength</th>
+                        <th>Typical tool to prove it</th>
+                        <th>Main use</th>
+                    </tr>
+                    <tr>
+                        <td>In probability</td>
+                        <td>Medium</td>
+                        <td>Chebyshev / Markov inequality</td>
+                        <td>Weak LLN, consistency of estimators</td>
+                    </tr>
+                    <tr>
+                        <td>Almost sure</td>
+                        <td>Strong</td>
+                        <td>Borel–Cantelli lemma</td>
+                        <td>Strong LLN</td>
+                    </tr>
+                    <tr>
+                        <td>L²</td>
+                        <td>Strong (moments)</td>
+                        <td>Compute E[(Xₙ−X)²]</td>
+                        <td>LLN with finite variance, MSE of estimators</td>
+                    </tr>
+                    <tr>
+                        <td>In distribution</td>
+                        <td>Weakest</td>
+                        <td>Characteristic functions</td>
+                        <td>CLT, confidence intervals, hypothesis tests</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3>Role in the Law of Large Numbers (LLN)</h3>
+            <p>Let X₁, X₂, … be independent with the same mean μ and variance σ², and let X̄ₙ = (X₁+…+Xₙ)/n be the
+                sample average. The LLN says X̄ₙ approaches μ.</p>
+            <p>"Gets close" can mean different things, so the LLN comes in three versions, one for each mode of
+                convergence
+                from above:</p>
+            <ul>
+                <li><strong>L² version (mean-square):</strong> the average squared error of X̄ₙ is
+                    E[(X̄ₙ − μ)²] = Var(X̄ₙ) = σ²/n, which goes to 0 as n grows. So X̄ₙ gets close to μ in mean square.
+                </li>
+                <li><strong>Weak LLN (in probability):</strong> for any tolerance ε, the probability that X̄ₙ is farther
+                    than ε
+                    from μ goes to 0: P(|X̄ₙ − μ| &gt; ε) ≤ σ²/(nε²) → 0 (Chebyshev's inequality). It follows directly
+                    from the
+                    L² version.</li>
+                <li><strong>Strong LLN (almost surely):</strong> in your one single experiment, with probability 1 the
+                    sequence
+                    of averages eventually settles at μ and never leaves it. This is the guarantee that "in the long
+                    run, my
+                    average will settle at μ". It needs only a finite mean, not a finite variance.</li>
+            </ul>
+            <div class="key">
+                <p><strong>Statistical meaning:</strong> the sample mean is a <em>consistent</em> estimator of μ.
+                    Consistency of estimators is usually defined through convergence in probability.</p>
+            </div>
+
+            <h3>Role in the Central Limit Theorem (CLT)</h3>
+            <p>The LLN says X̄ₙ → μ, but it does not tell us <em>how fast</em> or <em>what the error looks like</em>.
+                The CLT zooms in on the error:</p>
+            <div class="eq">√n ( X̄ₙ − μ ) / σ &nbsp;→ᵈ&nbsp; N(0, 1)</div>
+            <p>This is convergence <strong>in distribution</strong>: the shape of the standardized error becomes a bell
+                curve, whatever the original distribution (if variance is finite). It cannot be stated with the stronger
+                modes: the standardized quantity does not converge to any fixed random variable, it keeps fluctuating,
+                only its distribution stabilizes.</p>
+            <div class="key">
+                <p><strong>LLN vs CLT in one sentence:</strong> the LLN says the error shrinks to zero (X̄ₙ − μ → 0);
+                    the CLT says that, once multiplied by √n, the error has a stable normal shape.</p>
+            </div>
+            <p><strong>Other important results.</strong> The CLT is the starting point. These four tools let us use it
+                in real
+                problems, where things are usually more complicated (for example, σ is unknown).</p>
+            <ul>
+                <li><strong>Continuous Mapping Theorem.</strong> If Xₙ converges to X (in any of the modes above) and g
+                    is a
+                    continuous function, then g(Xₙ) converges to g(X). <em>Example:</em> the CLT says
+                    √n(X̄ₙ − μ)/σ →ᵈ N(0,1). Squaring it (a continuous operation) gives a quantity that converges in
+                    distribution to a χ² with 1 degree of freedom.</li>
+
+                <li><strong>Slutsky's theorem.</strong> If Xₙ →ᵈ X and Yₙ →ᴾ c, where c is a constant, then we can add,
+                    multiply
+                    and divide them: Xₙ + Yₙ →ᵈ X + c, XₙYₙ →ᵈ cX, Xₙ/Yₙ →ᵈ X/c (c ≠ 0). <em>Example:</em> the CLT uses
+                    the true σ,
+                    which we do not know. We replace it with the sample standard deviation s, which converges in
+                    probability to
+                    σ. By Slutsky, √n(X̄ₙ − μ)/s still converges to N(0,1). This is why confidence intervals x̄ ± z·s/√n
+                    work.</li>
+
+                <li><strong>Delta method.</strong> If √n(Tₙ − θ) →ᵈ N(0, σ²), then for a smooth function g,
+                    √n(g(Tₙ) − g(θ)) →ᵈ N(0, g′(θ)²σ²). In words: if an estimate is approximately normal, any smooth
+                    function
+                    of it is approximately normal too, and the variance is multiplied by the squared slope g′(θ)².
+                    <em>Example:</em> with Tₙ = X̄ₙ and g(x) = x², the variance becomes 4μ²σ².
+                </li>
+
+                <li><strong>Asymptotic normality of the Maximum Likelihood Estimator (MLE).</strong> The MLE θ̂ is the
+                    value of
+                    the parameter that makes the observed data most probable. For large n,
+                    √n(θ̂ − θ) →ᵈ N(0, 1/I(θ)). Here I(θ) is the <em>Fisher information</em>: how much information one
+                    observation carries about θ. More information means a smaller variance, so a more precise estimate.
+                    <em>Example:</em> for a coin with P(heads) = θ, the MLE is the proportion of heads and
+                    I(θ) = 1/(θ(1−θ)), so the variance is θ(1−θ), exactly what the CLT gives.
+                </li>
+            </ul>
+
+            <h3>Why does √n appear everywhere?</h3>
+            <p>It comes from how variance behaves when we add <strong>independent</strong> random variables.</p>
+            <ol>
+                <li><strong>Variance adds up (needs independence, or at least uncorrelated):</strong>
+                    <div class="eq">Var(X₁ + … + Xₙ) = Var(X₁) + … + Var(Xₙ) = nσ²</div>
+                </li>
+                <li><strong>Typical size of the sum</strong> = standard deviation = √(nσ²) = σ√n. The sum grows like √n,
+                    not like n. Positive and negative deviations partly cancel.</li>
+                <li><strong>The average</strong> divides by n: Var(X̄ₙ) = nσ²/n² = σ²/n, so the standard deviation is
+                    σ/√n. The error shrinks at rate 1/√n.</li>
+                <li><strong>To keep the error from vanishing or exploding,</strong> multiply by exactly √n: Var(√n(X̄ₙ −
+                    μ)) = n · σ²/n = σ². With any smaller power it goes to 0 (LLN); with any larger power it blows up.
+                    √n is the only "just right" scaling, so the CLT lives there.</li>
+            </ol>
+            <div class="tw">
+                <table>
+                    <tr>
+                        <th>Quantity</th>
+                        <th>Variance</th>
+                        <th>Behavior as n grows</th>
+                    </tr>
+                    <tr>
+                        <td>Sₙ = ΣXᵢ</td>
+                        <td>nσ²</td>
+                        <td class="pink">grows</td>
+                    </tr>
+                    <tr>
+                        <td>Sₙ / n (average)</td>
+                        <td>σ²/n</td>
+                        <td class="mint">shrinks to 0 (LLN)</td>
+                    </tr>
+                    <tr>
+                        <td>Sₙ / √n</td>
+                        <td>σ²</td>
+                        <td class="yellow">stays constant (CLT)</td>
+                    </tr>
+                </table>
+            </div>
+            <p><strong>Role of independence:</strong> if the variables were strongly positively correlated, Var(Sₙ)
+                would grow like n² (extreme case: all copies of the same variable, Var = n²σ²), and averaging would not
+                help at all. <strong>In statistics:</strong> the standard error σ/√n explains why, to cut the
+                uncertainty of an estimate in half, you need <em>four times</em> more data. Confidence intervals have
+                the form x̄ ± z·s/√n, and standard test statistics contain √n.</p>
+        </section>
+
+        <section id="p2" class="panel">
+            <h2>Part 2 — Conditional Probability, Bayes' Theorem and Inference</h2>
+
+            <h3>Conditional probability</h3>
+            <div class="eq">P(A | B) = P(A ∩ B) / P(B), &nbsp; P(B) &gt; 0</div>
+            <p>It is the probability of A <em>once we know B has happened</em>: we restrict our attention to the world
+                where B is true and re-scale. In probability theory it is the building block for independence (A and B
+                are independent if P(A|B) = P(A)), the multiplication rule P(A∩B) = P(A|B)P(B), and the law of total
+                probability P(B) = ΣP(B|Aᵢ)P(Aᵢ). In statistics it describes how data depend on parameters, for example
+                P(data | θ).</p>
+
+            <h3>Bayes' Theorem</h3>
+            <p>Writing P(A∩B) in two ways, P(A|B)P(B) = P(B|A)P(A), gives:</p>
+            <div class="eq">P(A | B) = P(B | A) · P(A) / P(B)</div>
+            <p>For inference, A becomes the unknown parameter θ and B becomes the observed data:</p>
+            <div class="eq">p(θ | data) = p(data | θ) · p(θ) / p(data) &nbsp; ∝ &nbsp; Likelihood × Prior</div>
+
+            <div class="grid">
+                <div class="card"><span class="tag">BEFORE DATA</span>
+                    <h3>Prior p(θ)</h3>
+                    <p>What we believe about θ <em>before</em> seeing data: from past studies, expert knowledge, or "no
+                        strong opinion".</p>
+                </div>
+                <div class="card"><span class="tag">WHAT DATA SAY</span>
+                    <h3>Likelihood p(data|θ)</h3>
+                    <p>How probable the observed data are for each possible θ. Seen as a function of θ, it shows which
+                        values explain the data best. It is <em>not</em> a probability distribution over θ.</p>
+                </div>
+                <div class="card"><span class="tag">AFTER DATA</span>
+                    <h3>Posterior p(θ|data)</h3>
+                    <p>Our updated belief: prior knowledge combined with evidence. This is the final answer of Bayesian
+                        inference.</p>
+                </div>
+                <div class="card"><span class="tag">NORMALIZER</span>
+                    <h3>Evidence p(data)</h3>
+                    <p>p(data) = Σ p(data|θ)p(θ) (or an integral). It only rescales so that the posterior sums to 1.</p>
+                </div>
+            </div>
+
+            <h3>Why is updating so central?</h3>
+            <p>The posterior of today becomes the prior of tomorrow: when new data arrive, we apply Bayes again, and the
+                result is the same as analyzing all data together. This gives a natural way to learn sequentially, to
+                express uncertainty about θ as a full probability distribution (credible intervals, direct statements
+                like "P(θ &gt; 0.5 | data) = 0.9"), to include prior information, and to make decisions.</p>
+
+            <h3>Example 1 — Medical test (discrete prior)</h3>
+            <p>A disease affects 1% of people (<strong>prior</strong>). A test is positive for 99% of sick people
+                (sensitivity) and 5% of healthy people (false positives). Someone tests positive. What is P(sick |
+                positive)?</p>
+            <div class="eq">P(S|+) = (0.99 × 0.01) / (0.99 × 0.01 + 0.05 × 0.99) = 0.0099 / 0.0594 ≈ 0.167</div>
+            <p>Only about <strong>17%</strong>, despite a "99% accurate" test. The reason is the <strong>low
+                    prior</strong>: among 10,000 people, about 99 are sick and positive, but about 495 healthy people
+                are also positive. Ignoring the prior (the "base-rate fallacy") would give a completely wrong
+                conclusion.</p>
+
+            <h3>Example 2 — Estimating a coin's probability of heads (continuous prior)</h3>
+            <p>Let θ = P(heads). Use a Beta(a, b) prior and a Binomial likelihood for k heads in n flips. The posterior
+                is again a Beta, with the simple update rule:</p>
+            <div class="eq">Beta(a, b) + (k heads, n−k tails) ⟹ Beta(a + k, b + n − k), &nbsp; posterior mean =
+                (a+k)/(a+b+n)</div>
+            <div class="tw">
+                <table>
+                    <tr>
+                        <th>Prior</th>
+                        <th>Data</th>
+                        <th>Posterior</th>
+                        <th>Posterior mean</th>
+                    </tr>
+                    <tr>
+                        <td>Flat Beta(1,1)</td>
+                        <td>8 heads in 10</td>
+                        <td>Beta(9, 3)</td>
+                        <td>0.75</td>
+                    </tr>
+                    <tr>
+                        <td>Skeptical Beta(20,20) (fair coin)</td>
+                        <td>8 heads in 10</td>
+                        <td>Beta(28, 22)</td>
+                        <td>0.56</td>
+                    </tr>
+                    <tr>
+                        <td>Flat Beta(1,1)</td>
+                        <td>80 heads in 100</td>
+                        <td>Beta(81, 21)</td>
+                        <td>0.79</td>
+                    </tr>
+                    <tr>
+                        <td>Skeptical Beta(20,20)</td>
+                        <td>80 heads in 100</td>
+                        <td>Beta(100, 40)</td>
+                        <td>0.71</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="key">
+                <p><strong>Lesson:</strong> with little data (n = 10) the prior strongly changes the conclusion (0.75 vs
+                    0.56). With more data (n = 100) the two posteriors get much closer (0.79 vs 0.71): <em>the data
+                        overwhelm the prior</em>. This links back to Part 1: as n grows the likelihood dominates, and
+                    Bayesian estimates behave like the maximum likelihood estimate, which is consistent and
+                    asymptotically normal.</p>
+            </div>
+
+            <h3>Advantages, limitations and influence on conclusions</h3>
+            <div class="grid">
+                <div class="card">
+                    <h3 class="mint">Advantages</h3>
+                    <ul>
+                        <li>Uses prior knowledge (useful with small samples)</li>
+                        <li>Direct probability statements about parameters</li>
+                        <li>Natural sequential updating</li>
+                        <li>Works with complex, hierarchical models</li>
+                        <li>Credible intervals are easy to interpret</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="pink">Limitations</h3>
+                    <ul>
+                        <li>The prior is partly subjective; different priors give different answers</li>
+                        <li>Computation can be hard (the evidence integral), often requiring MCMC</li>
+                        <li>A wrong, very strong prior can mislead for a long time</li>
+                        <li>The likelihood must be correctly specified</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="yellow">Good practice</h3>
+                    <ul>
+                        <li>Use weakly informative priors when knowledge is limited</li>
+                        <li>Run a <em>sensitivity analysis</em> with several priors</li>
+                        <li>Report prior, likelihood and posterior clearly</li>
+                        <li>Collect more data: it reduces prior influence</li>
+                    </ul>
+                </div>
+            </div>
+            <p><strong>Summary:</strong> the likelihood carries the information in the data; the prior carries what we
+                knew before; the posterior is the balance of the two. With small samples the prior matters; with large
+                samples the likelihood dominates. This closes the circle with Part 1: LLN and CLT describe why, as n
+                grows, estimates become accurate (error ~ 1/√n) and approximately normal, and the same asymptotic
+                behavior governs both classical and Bayesian inference.</p>
+        </section>
+    </div>
+</body>
+
+</html>
